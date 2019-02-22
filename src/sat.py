@@ -45,15 +45,15 @@ def read_file(file):
 
 assert len(read_file(example_fn)) == 18
 
-def write_dimacs(file, rules, ser_fn):
+def write_dimacs(file, facts, ser_fn=str):
   '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''
-  s = '\n'.join(list(map(lambda ors: '\n'.join(list(map(lambda x: ('-' if x[1] == N else '') + ser_fn(x[0]), ors))) + ' 0', rules)))
+  s = '\n'.join([f'{"-" if v == N else ""}{ser_fn(k)} 0' for k,v in facts.items() if v != U])
   with open(file, 'w') as f:
     f.write(s)
 
 tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
-write_dimacs(tmp_file, [[(1, N)]], str)
-assert read_file(tmp_file) == [[('1', N)]]
+write_dimacs(tmp_file, {'123': Y})
+assert read_file(tmp_file) == [[('123', Y)]]
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
@@ -178,7 +178,7 @@ def split(rules_, facts_, facts_printer, fact_printer):
 
 assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
 
-def solve_csp(rules, fact_printer=dict):
+def solve_csp(rules, out_file, fact_printer=dict):
   start = time.time()
 
   # print('initialization')
@@ -210,5 +210,7 @@ def solve_csp(rules, fact_printer=dict):
   # print('final solution')
   print(fact_printer(facts))
 
-  # write_dimacs(tmp_file, [[((1,2,3), N)]], eye)
-  return True
+  # This output should again be a DIMACS file, but containing only the truth assignment to all variables (729 for Sudoku, different for other SAT problems). If your input file is called 'filename', then make sure your outputfile is called 'filename.out'. If there is no solution (inconsistent problem), the output can be an empty file. If there are multiple solutions (eg. non-propert Sudoku) you only need to return a single solution.
+  write_dimacs(out_file, facts)
+
+  return sat == Y
