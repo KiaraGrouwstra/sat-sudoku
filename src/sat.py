@@ -29,37 +29,31 @@ def parse_fact(s):
 
 assert parse_fact('-356') == ('356', N)
 
-def parse_dimacs(parse_fn):
-  def parse_lines(lines):
-    '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''
-    rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], lines))
-    result = [list(map(parse_fn, line.strip().split(' ')[:-1])) for line in rows]
-    return result
-  return parse_lines
+def parse_dimacs(lines):
+  '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''
+  rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], lines))
+  result = [list(map(parse_fact, line.strip().split(' ')[:-1])) for line in rows]
+  return result
 
-assert parse_dimacs(eye)(['123 -456 0']) == [['123', '-456']]
+assert parse_dimacs(['123 -456 0']) == [[('123', 1), ('456', -1)]]
 
-def read_file(file, parse_fn):
+def read_file(file):
   '''read a file and parse its lines'''
   with open(file) as f:
     lines = f.readlines()
-  return parse_fn(lines)
+  return parse_dimacs(lines)
 
-assert len(read_file(example_fn, parse_dimacs(eye))) == 18
+assert len(read_file(example_fn)) == 18
 
 def write_dimacs(file, rules, ser_fn):
-  '''write facts to a DIMACS format file based on a serialization function, incl. p/c lines and final 0s'''
-  # TODO: p cnf max_variables clauses
-#   max_variables = ???
-#   clauses = len(rules)
-#   header = f'p cnf {max_variables} {clauses}'
+  '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''
   s = '\n'.join(list(map(lambda ors: '\n'.join(list(map(lambda x: ('-' if x[1] == N else '') + ser_fn(x[0]), ors))) + ' 0', rules)))
   with open(file, 'w') as f:
     f.write(s)
 
 tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 write_dimacs(tmp_file, [[(1, N)]], str)
-assert read_file(tmp_file, parse_dimacs(eye)) == [['-1']]
+assert read_file(tmp_file) == [[('1', N)]]
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
