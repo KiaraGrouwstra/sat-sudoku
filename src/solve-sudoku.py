@@ -7,4 +7,4 @@ from sudoku import *
 clauses = read_file(rule_fn, parse_dimacs(parse_fact))
 example = read_file(example_fn, parse_dimacs(parse_fact))
 
-solve_sudoku(clauses, example)
+assert solve_csp(clauses + example, sudoku_board)

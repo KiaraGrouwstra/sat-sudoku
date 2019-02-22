@@ -1,5 +1,4 @@
 import numpy as np
-import time
 from sat import *
 
 # stuff specific to our sudoku representation
@@ -43,39 +42,3 @@ def sudoku_board(facts):
 
 def_dict = defaultdict(lambda: U, { '111': Y })
 assert sudoku_board(def_dict)[0][0] == 1
-
-def solve_sudoku(clauses, sudoku):
-  start = time.time()
-
-  # print('initialization')
-  rules = clauses + sudoku
-  facts = defaultdict(lambda: U, {})  # initialize facts as U
-  # print(sudoku_board(facts))
-
-  # print('simplify init')
-  (sat, rules, facts) = simplify_initial(rules, facts)
-  # assert sat != N
-  if sat == N:
-    return False
-  # print(sudoku_board(facts))
-
-  # print('simplify')
-  (sat, rules, facts) = simplify(rules, facts)
-  # assert sat != N
-  if sat == N:
-    return False
-  # print(sudoku_board(facts))
-
-  # print('split to answer')
-  if sat == U:
-    (sat, rules, facts) = split(rules, facts, sudoku_board, eye)
-  # assert sat != N
-  if sat == N:
-    return False
-
-  print(f'took {time.time() - start} seconds')
-  # print('final solution')
-  print(sudoku_board(facts))
-
-  # write_dimacs(tmp_file, [[((1,2,3), N)]], eye)
-  return True

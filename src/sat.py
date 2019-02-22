@@ -1,7 +1,7 @@
-import numpy as np
 import copy
 import tempfile
 import os
+import time
 from collections import defaultdict
 from fetch import *
 
@@ -183,3 +183,38 @@ def split(rules_, facts_, facts_printer, fact_printer):
   return (sat, rules, facts)
 
 assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
+
+def solve_csp(rules, fact_printer=eye):
+  start = time.time()
+
+  # print('initialization')
+  facts = defaultdict(lambda: U, {})  # initialize facts as U
+  # print(fact_printer(facts))
+
+  # print('simplify init')
+  (sat, rules, facts) = simplify_initial(rules, facts)
+  # assert sat != N
+  if sat == N:
+    return False
+  # print(fact_printer(facts))
+
+  # print('simplify')
+  (sat, rules, facts) = simplify(rules, facts)
+  # assert sat != N
+  if sat == N:
+    return False
+  # print(fact_printer(facts))
+
+  # print('split to answer')
+  if sat == U:
+    (sat, rules, facts) = split(rules, facts, fact_printer, eye)
+  # assert sat != N
+  if sat == N:
+    return False
+
+  print(f'took {time.time() - start} seconds')
+  # print('final solution')
+  print(fact_printer(facts))
+
+  # write_dimacs(tmp_file, [[((1,2,3), N)]], eye)
+  return True
