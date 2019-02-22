@@ -3,7 +3,7 @@ import tempfile
 import os
 import time
 from collections import defaultdict
-from fetch import *
+# from fetch import *
 
 # constants
 
@@ -43,7 +43,7 @@ def read_file(file):
     lines = f.readlines()
   return parse_dimacs(lines)
 
-assert len(read_file(example_fn)) == 18
+# assert len(read_file(example_fn)) == 18
 
 def write_dimacs(file, facts, ser_fn=str):
   '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''

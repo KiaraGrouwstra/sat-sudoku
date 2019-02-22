@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import argparse
-from sat import *
+from dp import *
 from sudoku import *
 
 parser = argparse.ArgumentParser()

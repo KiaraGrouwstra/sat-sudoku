@@ -1,5 +1,5 @@
 import numpy as np
-from sat import *
+from dp import *
 
 # stuff specific to our sudoku representation
 
