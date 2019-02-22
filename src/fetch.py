@@ -1,7 +1,7 @@
 import urllib.request
 import os.path
 
-# Fetching the sudoku rules and a given example sudoko problem
+# Fetching the sudoku rules and a given example sudoku problem
 
 def get_sudoku(fname):
     path = './data/' + fname
