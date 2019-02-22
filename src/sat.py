@@ -20,6 +20,15 @@ def rev_enum(lst):
 
 assert rev_enum(['a','b']) == [(1, 'b'), (0, 'a')]
 
+def parse_fact(s):
+  '''parse a DIMACS fact like '-356' to (key, belief)'''
+  belief = N if s[0] == '-' else Y
+  if belief == N:
+    s = s[1:]
+  return (s, belief)
+
+assert parse_fact('-356') == ('356', N)
+
 def parse_dimacs(parse_fn):
   def parse_lines(lines):
     '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''

@@ -8,15 +8,6 @@ from sat import *
 # complication: this means 123 and -123 are stored separately and we don't check for clashes here.
 # instead remove variable instance from all rules, regarding empty clauses as clashes.
 
-def parse_sudoku(s):
-  '''parse a sudoku fact like '-356' to ((row, col, digit), belief), numbers decremented by 1 to serve as indices'''
-  belief = N if s[0] == '-' else Y
-  if belief == N:
-    s = s[1:]
-  return (s, belief)
-
-assert parse_sudoku('-356') == ('356', N)
-
 def parse_sudoku_line(sudoku):
   clauses = []
   for i, char in enumerate(sudoku.strip()):
