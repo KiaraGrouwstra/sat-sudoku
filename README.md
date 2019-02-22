@@ -4,7 +4,7 @@ a SAT solver using sudokus
 ### usage
 ```bash
 # run locally
-python solve-sudoku.py
+python src/solve-sudoku.py
 # or by docker
-docker run -v $PWD:/app python:3.7-alpine python /app/solve-sudoku.py
+docker run -v $PWD:/app python:3.7-alpine python /app/src/solve-sudoku.py
 ```
