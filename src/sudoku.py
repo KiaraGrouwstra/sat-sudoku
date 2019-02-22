@@ -1,4 +1,3 @@
-import numpy as np
 from dp import *
 
 # stuff specific to our sudoku representation
@@ -30,15 +29,19 @@ def sudoku_board(facts):
   ROWS = 9
   COLS = 9
   DIGITS = 9
-  board = np.zeros((ROWS, COLS))
+
+  board = [[]] * ROWS
+  for row in range(ROWS):
+    board[row] = [0] * COLS
+
   for i in range(1,ROWS+1):
     for j in range(1,COLS+1):
       for k in range(1,DIGITS+1):
         key = f'{i}{j}{k}'
         if facts[key] == Y:
-          board[(i-1,j-1)] = k
+          board[i-1][j-1] = k
           break
-  return board
+  return '\n'.join([' '.join(map(str, l)) for l in board])
 
 def_dict = defaultdict(lambda: U, { '111': Y })
-assert sudoku_board(def_dict)[0][0] == 1
+assert sudoku_board(def_dict)[0][0] == '1'
