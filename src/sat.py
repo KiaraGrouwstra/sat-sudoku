@@ -2,6 +2,7 @@ import numpy as np
 import copy
 import tempfile
 import os
+from collections import defaultdict
 from fetch import *
 
 # constants
@@ -54,15 +55,14 @@ assert read_file(tmp_file, parse_dimacs(eye)) == [['-1']]
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
-  shape = facts.shape
-  relevances = np.zeros(shape, dtype=np.int8)
+  relevances = defaultdict(lambda: 0, {})
   for ors in rules:
     for rule in ors:
       (key, is_neg) = rule
       relevances[key] = relevances[key] + 1
-  return np.unravel_index(np.argmax(relevances), shape)
+  return max(relevances)
 
-assert pick_guess_fact([[((1,2,3), Y)]], np.zeros((4,4,4))) == (1,2,3)
+assert pick_guess_fact([[('123', Y)]], {}) == '123'
 
 # TODO: dedupe logic with simplify
 def simplify_initial(rules, facts):
@@ -101,7 +101,7 @@ def simplify_initial(rules, facts):
   sat = U if len(rules) else Y
   return (sat, rules, facts)
 
-assert simplify_initial([[(0, Y), (1, N), (0, N), (0, N)], [(1, N)]], np.array([Y, U]))[1] == []
+assert simplify_initial([[('0', Y), ('1', N), ('0', N), ('0', N)], [('1', N)]], { '0':Y, '1':U })[1] == []
 
 def simplify(rules, facts):
   '''simplify out unit clauses until we get stuck.
@@ -143,14 +143,14 @@ def simplify(rules, facts):
   sat = U if rules_left else Y
   return (sat, rules, facts)
 
-assert simplify([[(0, Y), (1, Y)]], np.array([Y, U]))[0] == Y
-assert simplify([[(0, N), (1, N)]], np.array([Y, Y]))[0] == N
-assert simplify([[(0, Y), (1, Y)]], np.array([U, U]))[0] == U
+assert simplify([[(0, Y), (1, Y)]], { 0:Y, 1:U })[0] == Y
+assert simplify([[(0, N), (1, N)]], { 0:Y, 1:Y })[0] == N
+assert simplify([[(0, Y), (1, Y)]], { 0:U, 1:U })[0] == U
 
 def split(rules_, facts_, facts_printer, fact_printer):
   '''guess a fact to proceed after simplify fails.'''
   rules = copy.deepcopy(rules_)
-  facts = np.copy(facts_)
+  facts = copy.deepcopy(facts_)
 
   guess_fact = pick_guess_fact(rules, facts)
   print_fact = fact_printer(guess_fact)
@@ -174,4 +174,4 @@ def split(rules_, facts_, facts_printer, fact_printer):
       (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
   return (sat, rules, facts)
 
-assert split([[(0, N), (1, N)]], np.array([U, U]), eye, eye)[0] == Y
+assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
