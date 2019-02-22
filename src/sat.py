@@ -178,7 +178,7 @@ def split(rules_, facts_, facts_printer, fact_printer):
 
 assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
 
-def solve_csp(rules, fact_printer=eye):
+def solve_csp(rules, fact_printer=dict):
   start = time.time()
 
   # print('initialization')
