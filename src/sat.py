@@ -23,7 +23,6 @@ assert rev_enum(['a','b']) == [(1, 'b'), (0, 'a')]
 def parse_dimacs(parse_fn):
   def parse_lines(lines):
     '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''
-    # TODO: p cnf max_variables clauses
     rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], lines))
     result = [list(map(parse_fn, line.strip().split(' ')[:-1])) for line in rows]
     return result
@@ -37,7 +36,7 @@ def read_file(file, parse_fn):
     lines = f.readlines()
   return parse_fn(lines)
 
-assert len(read_file(example_fn, parse_dimacs(eye))) == 17
+assert len(read_file(example_fn, parse_dimacs(eye))) == 18
 
 def write_dimacs(file, rules, ser_fn):
   '''write facts to a DIMACS format file based on a serialization function, incl. p/c lines and final 0s'''
