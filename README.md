@@ -4,7 +4,12 @@ a SAT solver using sudokus
 ### usage
 ```bash
 # run locally
-src/SAT -p1 -S1 ./data/sudoku-example-full.txt
-# or by docker
-docker run -v $PWD:/app python:3.7-alpine python /app/src/SAT.py -p1 -S1 /app/data/sudoku-example-full.txt
+src/SAT -S1 -p1 ./data/sudoku-example-full.txt
+# or by docker...
+# build docker image
+docker build -t sat .
+# test image on sample file, using strategy 1, printer 1 (sudoku board)
+docker run sat -S1 -p1
+# run on local file on our Desktop, mounting to /data, and passing it the file
+docker run -v ~/Desktop:/data sat -S1 -p1 /data/sudoku-example-full.txt
 ```
