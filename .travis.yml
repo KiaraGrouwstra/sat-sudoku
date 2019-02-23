@@ -1,5 +1,3 @@
-language: python
 script:
-  - pytest
-  - docker build -t sat .
-  - docker run sat -S1 -p1
+- docker build -t sat .
+- docker run sat -S1 -p1
