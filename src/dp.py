@@ -67,7 +67,7 @@ def write_dimacs(file, facts, ser_fn=str):
 
 tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 write_dimacs(tmp_file, {'123': Y})
-assert read_file(tmp_file) == [[('123', Y)]]
+assert read_file(tmp_file) == {0: {123: 1}}
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
