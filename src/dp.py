@@ -61,7 +61,7 @@ def pick_guess_fact(rules, facts):
 # TODO: dedupe logic with simplify
 def simplify_initial(rules, facts):
   '''do a one-time clean-up of tautologies and pure-literal clauses.'''
-  temp_rules = copy.deepcopy(rules)
+  temp_rules = copy.copy(rules)
   for (rules_idx, ors) in temp_rules.items():
 
     # tautology: p or not p is redundant
@@ -104,9 +104,9 @@ def simplify(rules, facts):
 
   while rules_left != prev_left:
     # print(f'{len(rules)} rules left')
-    temp_rules = copy.deepcopy(rules)
+    temp_rules = copy.copy(rules)
     for (outer_key, ors) in temp_rules.items():
-      temp_clause = copy.deepcopy(ors)
+      temp_clause = copy.copy(ors)
       for (inner_key, belief) in temp_clause.items():
         # TODO: parallelize lookups with linalg
         fact = facts[inner_key]
