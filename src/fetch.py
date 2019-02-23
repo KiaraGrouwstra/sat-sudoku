@@ -1,10 +1,10 @@
 import urllib.request
-import os.path
+import os
 
 # Fetching the sudoku rules and a given example sudoko problem
 
 def get_sudoku(fname):
-    path = './data/' + fname
+    path = os.getcwd() + '\\' + fname
     assert os.path.isfile(path)
     return path
 

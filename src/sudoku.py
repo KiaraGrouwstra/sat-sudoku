@@ -40,40 +40,41 @@ def sudoku_board(facts):
   ROWS = 9
   COLS = 9
   DIGITS = 9
-  board = np.zeros((ROWS, COLS))
+  board = np.zeros((ROWS, COLS), dtype = np.int32)
   for i in range(1,ROWS+1):
     for j in range(1,COLS+1):
       for k in range(1,DIGITS+1):
-        key = f'{i}{j}{k}'
+        key = int(f'{i}{j}{k}')
         if facts[key] == Y:
           board[(i-1,j-1)] = k
           break
   return board
 
-def_dict = defaultdict(lambda: U, { '111': Y })
+def_dict = defaultdict(lambda: U, {111: Y })
 assert sudoku_board(def_dict)[0][0] == 1
 
 def solve_sudoku(clauses, sudoku):
   start = time.time()
 
   # print('initialization')
-  rules = clauses + sudoku
+  # TODO Convert the rules into a dictionary containing the rules + sudoku_example
+  rules = rules_to_dict(clauses, sudoku)
   facts = defaultdict(lambda: U, {})  # initialize facts as U
-  # print(sudoku_board(facts))
+  #print(sudoku_board(facts))
 
   # print('simplify init')
   (sat, rules, facts) = simplify_initial(rules, facts)
   # assert sat != N
   if sat == N:
     return False
-  # print(sudoku_board(facts))
+  #print(sudoku_board(facts))
 
   # print('simplify')
   (sat, rules, facts) = simplify(rules, facts)
   # assert sat != N
   if sat == N:
     return False
-  # print(sudoku_board(facts))
+  #print(sudoku_board(facts))
 
   # print('split to answer')
   if sat == U:
