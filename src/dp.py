@@ -5,26 +5,16 @@ import time
 from collections import defaultdict
 
 # constants
+
 U = 0
 Y = 1
 N = -1
 eye = lambda x: x
 
 # Necessary Helper Functions
-def list_to_dict(lst):
-  temp_dict = {}
-  for key, value in lst:
-    temp_dict[key] = value
-  return temp_dict
 
-def rules_to_dict(clauses, sudoku):
-  clause_list = [[(variable, belief) for variable, belief in clauses[outer_key].items()] for outer_key in clauses]
-  example_sudoku_list = [[(variable, belief) for variable, belief in sudoku[outer_key].items()] for outer_key in sudoku]
-  rules_list = clause_list + example_sudoku_list
-  temp_dict_list = list(map(list_to_dict, rules_list))
-  rules = {key : value for key, value in enumerate(temp_dict_list)}
-  return rules
 def parse_dimacs(dimacs_file_contents):
+  '''parse a dimacs file to rules (dict of dicts)'''
   clause_dict = {}
   rows = list(filter(lambda s : s[0] not in ['c', 'p', 'd'], dimacs_file_contents))
   for i in range(len(rows)):
@@ -57,7 +47,6 @@ def read_file(file):
   return parse_dimacs(lines)
 
 # assert len(read_file(example_fn)) == 18
-
 
 def write_dimacs(file, facts, ser_fn=str):
   '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''

@@ -46,7 +46,15 @@ def sudoku_board(facts):
 def_dict = defaultdict(lambda: U, {111: Y })
 assert sudoku_board(def_dict)[0][0] == 1
 
+def rules_to_dict(clauses, sudoku)
+  '''merge rule dicts into a single dict for sudoku'''
+  clause_list = [[(variable, belief) for variable, belief in clauses[outer_key].items()] for outer_key in clauses]
+  example_sudoku_list = [[(variable, belief) for variable, belief in sudoku[outer_key].items()] for outer_key in sudoku]
+  rules_list = clause_list + example_sudoku_list
+  temp_dict_list = list(map(dict, rules_list))
+  rules = {key : value for key, value in enumerate(temp_dict_list)}
+  return rules
+
 def solve_sudoku(clauses, sudoku, out_file, fact_printer=dict):
-  # TODO Convert the rules into a dictionary containing the rules + sudoku_example
   rules = rules_to_dict(clauses, sudoku)
   return solve_csp(rules, out_file, fact_printer=dict)
