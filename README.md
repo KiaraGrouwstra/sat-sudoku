@@ -3,8 +3,10 @@ a SAT solver using sudokus
 
 ### usage
 ```bash
-# run locally
+# run locally as a command (*nix environment)
 src/SAT -S1 -p1 ./data/sudoku-example-full.txt
+# run explicitly as a Python script (cross-platform)
+python src/SAT.py -p1 -S1 ./data/sudoku-example-full.txt
 # or by docker...
 # build docker image
 docker build -t sat .
