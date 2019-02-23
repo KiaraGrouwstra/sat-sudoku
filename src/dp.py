@@ -24,30 +24,30 @@ def rules_to_dict(clauses, sudoku):
   temp_dict_list = list(map(list_to_dict, rules_list))
   rules = {key : value for key, value in enumerate(temp_dict_list)}
   return rules
-
 def parse_dimacs(dimacs_file_contents):
   clause_dict = {}
   rows = list(filter(lambda s : s[0] not in ['c', 'p', 'd'], dimacs_file_contents))
   for i in range(len(rows)):
     temp_dict = {}
-    term_list = rows[i].split(' ')
-    del term_list[-1]
-    tautology_flag = 0
+    tautology = False
+    term_list = rows[i].split(' ')[:-1]
     for term in term_list:
-        key = int(''.join(list(term)[1:])) if term[0] == '-' else int(term)
-        if key not in temp_dict:
-          temp_dict[key] = -1 if term[0] == '-' else 1
+      is_neg = term[0] == '-'
+      key = int(term[1:]) if is_neg else int(term)
+      val = N if is_neg else Y
+      if key not in temp_dict:
+        temp_dict[key] = val
+      else:
+        if temp_dict[key] == val:
+          continue
         else:
-          if (term[0] == '-' and temp_dict[key] == -1) or (term[0] != '-' and temp_dict[key] == 1):
-            continue
-          else:
-            tautology_flag = 1
-            break
-    if tautology_flag == 0:
+          tautology = True
+          break
+    if not tautology:
       clause_dict[i] = temp_dict
   return clause_dict
 
-assert parse_dimacs(['123 -456 0']) == {0:{123:1, 456:-1}}
+assert parse_dimacs(['123 -456 0']) == {0:{123:Y, 456:N}}
 assert parse_dimacs(['123 -123 0']) == {}
 
 def read_file(file):
