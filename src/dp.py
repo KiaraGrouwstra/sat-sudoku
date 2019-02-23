@@ -3,6 +3,7 @@ import tempfile
 import os
 import time
 from collections import defaultdict
+from dataclasses import dataclass
 
 # constants
 
@@ -10,6 +11,14 @@ U = 0
 Y = 1
 N = -1
 eye = lambda x: x
+
+# data classes
+
+@dataclass
+class State:
+  rules: dict
+  facts: dict
+  occurrences: dict
 
 # Necessary Helper Functions
 
@@ -49,155 +58,160 @@ def write_dimacs(file, facts, ser_fn=str):
   with open(file, 'w') as f:
     f.write(s)
 
-def pick_guess_fact(rules, facts):
+def pick_guess_fact(rules):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
   relevances = defaultdict(lambda: 0, {})
-  for outer_key, ors in rules.items():
+  for rules_idx, ors in rules.items():
     for inner_key, belief in ors.items():
       (key, is_neg) = (inner_key, belief)
       relevances[key] += 1
   return max(relevances)
 
 # TODO: dedupe logic with simplify
-def simplify_initial(rules, facts):
+def simplify_initial(state):
   '''do a one-time clean-up of tautologies and pure-literal clauses.'''
-  temp_rules = copy.copy(rules)
+  temp_rules = copy.copy(state.rules)
   for (rules_idx, ors) in temp_rules.items():
 
-    # tautology: p or not p is redundant
-    # TODO: handle cases where we have multiple instances of the same variable with the same beliefs
-    # group beliefs by key
-    res = {}
-    for (key, belief) in ors.items():
-      res.setdefault(key, []).append(belief)
-    # check if any key has multiple (= complementing) beliefs
-    if any(map(lambda arr: len(set(arr)) > 1, res.values())):
-      # ditch fact
-      # TODO: switch to linked list for constant-time deletions
-      # TODO: or instead just create new list for the whole pass
-      del rules[rules_idx]
-      continue
-
-    # clean out pure literals
+    # clean out unit clauses
     # TODO: properly implement pure literal removal, which actually means checking if a variable only has positive/negative occurrences left!
     # if only one option...
     if len(ors) == 1:
       [(key, belief)] = list(ors.items())
-      if facts[key] == -belief:  # opposite beliefs
+      if state.facts[key] == -belief:  # opposite beliefs
         # clash detected, report it
-        return (N, [], [])
+        return (N, state)
       else:
         # consider it fact
-        facts[key] = belief
+        state.facts[key] = belief
+        # TODO: to_remove.add(guess_fact)
       # we've exhausted the info in this rule, so get rid of it
-      del rules[rules_idx]
+      del state.rules[rules_idx]
+      state.occurrences[belief][key].remove(rules_idx)
+      # TODO: if not len(occurrences[belief][key]): check other belief, if both empty ditch both, if other exists, trigger pure literal clause, setting the belief to that other value
       continue
 
-  sat = U if len(rules) else Y
-  return (sat, rules, facts)
+  sat = U if len(state.rules) else Y
+  return (sat, state)
 
-def simplify(rules, facts):
+def simplify(state):
   '''simplify out unit clauses until we get stuck.
      returns (satisfiability, rules, facts).'''
   prev_left = 0
-  rules_left = len(rules)
+  rules_left = len(state.rules)
 
+  # TODO: instead of deletes create new list for the whole pass?
+  # TODO: do not full iterations but grab from to_remove
   while rules_left != prev_left:
     # print(f'{len(rules)} rules left')
     temp_rules = copy.copy(rules)
-    for (outer_key, ors) in temp_rules.items():
+    for (rules_idx, ors) in temp_rules.items():
       temp_clause = copy.copy(ors)
       for (inner_key, belief) in temp_clause.items():
         # TODO: parallelize lookups with linalg
-        fact = facts[inner_key]
+        fact = state.facts[inner_key]
         if fact != U:  # if we know something about this fact...
           if belief == fact:
             # data agrees, OR rule satisfied, ditch whole rule
-            del rules[outer_key]
+            del state.rules[rules_idx]
             break
           else:
             # data clashes, ditch option from rule
             del ors[inner_key]
-            # del rules[rules_idx][ors_idx]
+            state.occurrences[belief][inner_key].remove(rules_idx)
+            # TODO: if not len(state.occurrences[belief][key]): check other belief, if both empty ditch both, if other exists, trigger pure literal clause, setting the belief to that other value
+            # del state.rules[rules_idx][ors_idx]
             # if only one option remains...
             if len(ors) == 1:
               [(key, belief)] = list(ors.items())
-              if facts[key] == -belief:  # opposite beliefs
+              if state.facts[key] == -belief:  # opposite beliefs
                 # clash detected, report it
-                return (N, [], [])
+                return (N, state)
               else:
                 # consider it fact
                 facts[key] = belief
+                # TODO: to_remove.add(guess_fact)
               # we've exhausted the info in this rule, so get rid of it
-              del rules[outer_key]
+              del state.rules[rules_idx]
               break
             continue
         # else:  # no data available, nothing to do here
     prev_left = rules_left
-    rules_left = len(rules)
+    rules_left = len(state.rules)
   sat = U if rules_left else Y
-  return (sat, rules, facts)
+  return (sat, state)
 
-def split(rules_, facts_, facts_printer, fact_printer):
+def split(state_, facts_printer, fact_printer):
   '''guess a fact to proceed after simplify fails.'''
-  rules = copy.deepcopy(rules_)
-  facts = copy.deepcopy(facts_)
+  state = copy.deepcopy(state_)
 
-  guess_fact = pick_guess_fact(rules, facts)
+  guess_fact = pick_guess_fact(state.rules)
   print_fact = fact_printer(guess_fact)
   guess_value = Y  # TODO: maybe also guess false?
-  facts[guess_fact] = guess_value
+  state.facts[guess_fact] = guess_value
+  # TODO: to_remove.add(guess_fact)
   # print(f'guess     {print_fact}: {guess_value}')
   # print(facts_printer(facts))
-  (sat, rules, facts) = simplify(rules, facts)
+  (sat, state) = simplify(state)
 
   if sat == U:
-    (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
+    (sat, state) = split(state, facts_printer, fact_printer)
   if sat == N:
     # clash detected, backtrack
     corrected = -guess_value  # opposite of guess
     facts_[guess_fact] = corrected
     # TODO: backtrack to assumption of clashing fact?
     # print(f'backtrack {print_fact}: {corrected}')
-    # print(facts_printer(facts))
-    (sat, rules, facts) = simplify(rules_, facts_)
+    # print(facts_printer(state.facts))
+    (sat, state) = simplify(state_)
     if sat == U:
-      (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
-  return (sat, rules, facts)
+      (sat, state) = split(state, facts_printer, fact_printer)
+  return (sat, state)
+
+def get_occurrences(rules, belief):
+  '''get rule occurrences for a belief, e.g. { 123: set([3, 10]) }'''
+  belief_occurrences = defaultdict(lambda: set())
+  for line, ors in rules.items():
+    for k, v in ors.items():
+      if v == belief:
+        belief_occurrences[k].add(line)
 
 def solve_csp(rules, out_file, fact_printer=dict):
   start = time.time()
 
   # print('initialization')
-  facts = defaultdict(lambda: U, {})  # initialize facts as U
+  # initialize facts as U
+  facts = defaultdict(lambda: U, {})
   # print(fact_printer(facts))
+  occurrences = { belief: get_occurrences(rules, belief) for belief in [Y, N] }
+  state = State(rules, facts, occurrences)
 
   # print('simplify init')
-  (sat, rules, facts) = simplify_initial(rules, facts)
+  (sat, state) = simplify_initial(state)
   # assert sat != N
   if sat == N:
     return False
-  # print(fact_printer(facts))
+  # print(fact_printer(state.facts))
 
   # print('simplify')
-  (sat, rules, facts) = simplify(rules, facts)
+  (sat, state) = simplify(state)
   # assert sat != N
   if sat == N:
     return False
-  # print(fact_printer(facts))
+  # print(fact_printer(state.facts))
 
   # print('split to answer')
   if sat == U:
-    (sat, rules, facts) = split(rules, facts, fact_printer, eye)
+    (sat, state) = split(state, fact_printer, eye)
   # assert sat != N
   if sat == N:
     return False
 
   print(f'took {time.time() - start} seconds')
   # print('final solution')
-  print(fact_printer(facts))
+  print(fact_printer(state.facts))
 
-  # This output should again be a DIMACS file, but containing only the truth assignment to all variables (729 for Sudoku, different for other SAT problems). If your input file is called 'filename', then make sure your outputfile is called 'filename.out'. If there is no solution (inconsistent problem), the output can be an empty file. If there are multiple solutions (eg. non-propert Sudoku) you only need to return a single solution.
-  write_dimacs(out_file, facts)
+  # This output should again be a DIMACS file, but containing only the truth assignment to all variables (729 for Sudoku, different for other SAT problems). If your input file is called 'filename', then make sure your outputfile is called 'filename.out'. If there is no solution (inconsistent problem), the output can be an empty file. If there are multiple solutions (eg. non-proper Sudoku) you only need to return a single solution.
+  write_dimacs(out_file, state.facts)
 
   return sat == Y
