@@ -3,12 +3,6 @@ import tempfile
 import os
 import time
 from collections import defaultdict
-<<<<<<< HEAD:src/sat.py
-import copy
-from fetch import *
-=======
-# from fetch import *
->>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
 
 # constants
 U = 0
@@ -53,33 +47,8 @@ def parse_dimacs(dimacs_file_contents):
       clause_dict[i] = temp_dict
   return clause_dict
 
-<<<<<<< HEAD:src/sat.py
 assert parse_dimacs(['123 -456 0']) == {0:{123:1, 456:-1}}
 assert parse_dimacs(['123 -123 0']) == {}
-=======
-def rev_enum(lst):
-  '''reverse enumeration, so we can safely remove stuff without messing up our indices'''
-  return list(enumerate(lst))[::-1]
-
-assert rev_enum(['a','b']) == [(1, 'b'), (0, 'a')]
-
-def parse_fact(s):
-  '''parse a DIMACS fact like '-356' to (key, belief)'''
-  belief = N if s[0] == '-' else Y
-  if belief == N:
-    s = s[1:]
-  return (s, belief)
-
-assert parse_fact('-356') == ('356', N)
->>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
-
-def parse_dimacs(lines):
-  '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''
-  rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], lines))
-  result = [list(map(parse_fact, line.strip().split(' ')[:-1])) for line in rows]
-  return result
-
-assert parse_dimacs(['123 -456 0']) == [[('123', 1), ('456', -1)]]
 
 def read_file(file):
   '''read a file and parse its lines'''
@@ -87,24 +56,8 @@ def read_file(file):
     lines = f.readlines()
   return parse_dimacs(lines)
 
-<<<<<<< HEAD:src/sat.py
-assert len(read_file(example_fn, parse_dimacs)) == 18
-
-# def write_dimacs(file, rules, ser_fn):
-#   '''write facts to a DIMACS format file based on a serialization function, incl. p/c lines and final 0s'''
-#   # TODO: p cnf max_variables clauses
-# #   max_variables = ???
-# #   clauses = len(rules)
-# #   header = f'p cnf {max_variables} {clauses}'
-#   s = '\n'.join(list(map(lambda ors: '\n'.join(list(map(lambda x: ('-' if x[1] == N else '') + ser_fn(x[0]), ors))) + ' 0', rules)))
-#   with open(file, 'w') as f:
-#     f.write(s)
-
-# tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
-# write_dimacs(tmp_file, [[(1, N)]], str)
-# assert read_file(tmp_file, parse_dimacs(eye)) == [['-1']]
-=======
 # assert len(read_file(example_fn)) == 18
+
 
 def write_dimacs(file, facts, ser_fn=str):
   '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''
@@ -115,7 +68,6 @@ def write_dimacs(file, facts, ser_fn=str):
 tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 write_dimacs(tmp_file, {'123': Y})
 assert read_file(tmp_file) == [[('123', Y)]]
->>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
@@ -241,10 +193,7 @@ def split(rules_, facts_, facts_printer, fact_printer):
       (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
   return (sat, rules, facts)
 
-<<<<<<< HEAD:src/sat.py
 assert split({0:{0:N, 1:N}}, {0:U, 1:U}, eye, eye)[0] == Y
-=======
-assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
 
 def solve_csp(rules, out_file, fact_printer=dict):
   start = time.time()
@@ -282,4 +231,3 @@ def solve_csp(rules, out_file, fact_printer=dict):
   write_dimacs(out_file, facts)
 
   return sat == Y
->>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
