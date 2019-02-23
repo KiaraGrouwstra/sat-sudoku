@@ -14,4 +14,6 @@ docker build -t sat .
 docker run sat -S1 -p1
 # run on local file on our Desktop, mounting to /data, and passing it the file
 docker run -v ~/Desktop:/data sat -S1 -p1 /data/sudoku-example-full.txt
+# to test all the assertions regarding the helper functions
+pytest
 ```
