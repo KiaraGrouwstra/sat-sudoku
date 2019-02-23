@@ -3,7 +3,6 @@ import tempfile
 import os
 import time
 from collections import defaultdict
-# from fetch import *
 
 # constants
 
@@ -14,28 +13,29 @@ eye = lambda x: x
 
 # Necessary Helper Functions
 
-def rev_enum(lst):
-  '''reverse enumeration, so we can safely remove stuff without messing up our indices'''
-  return list(enumerate(lst))[::-1]
-
-assert rev_enum(['a','b']) == [(1, 'b'), (0, 'a')]
-
-def parse_fact(s):
-  '''parse a DIMACS fact like '-356' to (key, belief)'''
-  belief = N if s[0] == '-' else Y
-  if belief == N:
-    s = s[1:]
-  return (s, belief)
-
-assert parse_fact('-356') == ('356', N)
-
-def parse_dimacs(lines):
-  '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''
-  rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], lines))
-  result = [list(map(parse_fact, line.strip().split(' ')[:-1])) for line in rows]
-  return result
-
-assert parse_dimacs(['123 -456 0']) == [[('123', 1), ('456', -1)]]
+def parse_dimacs(dimacs_file_contents):
+  '''parse a dimacs file to rules (dict of dicts)'''
+  clause_dict = {}
+  rows = list(filter(lambda s : s[0] not in ['c', 'p', 'd'], dimacs_file_contents))
+  for i in range(len(rows)):
+    temp_dict = {}
+    tautology = False
+    term_list = rows[i].split(' ')[:-1]
+    for term in term_list:
+      is_neg = term[0] == '-'
+      key = int(term[1:]) if is_neg else int(term)
+      val = N if is_neg else Y
+      if key not in temp_dict:
+        temp_dict[key] = val
+      else:
+        if temp_dict[key] == val:
+          continue
+        else:
+          tautology = True
+          break
+    if not tautology:
+      clause_dict[i] = temp_dict
+  return clause_dict
 
 def read_file(file):
   '''read a file and parse its lines'''
@@ -43,39 +43,32 @@ def read_file(file):
     lines = f.readlines()
   return parse_dimacs(lines)
 
-# assert len(read_file(example_fn)) == 18
-
 def write_dimacs(file, facts, ser_fn=str):
   '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''
   s = '\n'.join([f'{"-" if v == N else ""}{ser_fn(k)} 0' for k,v in facts.items() if v != U])
   with open(file, 'w') as f:
     f.write(s)
 
-tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
-write_dimacs(tmp_file, {'123': Y})
-assert read_file(tmp_file) == [[('123', Y)]]
-
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
   relevances = defaultdict(lambda: 0, {})
-  for ors in rules:
-    for rule in ors:
-      (key, is_neg) = rule
-      relevances[key] = relevances[key] + 1
+  for outer_key, ors in rules.items():
+    for inner_key, belief in ors.items():
+      (key, is_neg) = (inner_key, belief)
+      relevances[key] += 1
   return max(relevances)
-
-assert pick_guess_fact([[('123', Y)]], {}) == '123'
 
 # TODO: dedupe logic with simplify
 def simplify_initial(rules, facts):
-  '''do a one-time clean-up of tautologous and pure-literal clauses.'''
-  for (rules_idx, ors) in rev_enum(rules):
+  '''do a one-time clean-up of tautologies and pure-literal clauses.'''
+  temp_rules = copy.copy(rules)
+  for (rules_idx, ors) in temp_rules.items():
 
     # tautology: p or not p is redundant
     # TODO: handle cases where we have multiple instances of the same variable with the same beliefs
     # group beliefs by key
     res = {}
-    for (key, belief) in ors:
+    for (key, belief) in ors.items():
       res.setdefault(key, []).append(belief)
     # check if any key has multiple (= complementing) beliefs
     if any(map(lambda arr: len(set(arr)) > 1, res.values())):
@@ -89,7 +82,7 @@ def simplify_initial(rules, facts):
     # TODO: properly implement pure literal removal, which actually means checking if a variable only has positive/negative occurrences left!
     # if only one option...
     if len(ors) == 1:
-      [(key, belief)] = ors
+      [(key, belief)] = list(ors.items())
       if facts[key] == -belief:  # opposite beliefs
         # clash detected, report it
         return (N, [], [])
@@ -103,32 +96,32 @@ def simplify_initial(rules, facts):
   sat = U if len(rules) else Y
   return (sat, rules, facts)
 
-assert simplify_initial([[('0', Y), ('1', N), ('0', N), ('0', N)], [('1', N)]], { '0':Y, '1':U })[1] == []
-
 def simplify(rules, facts):
   '''simplify out unit clauses until we get stuck.
      returns (satisfiability, rules, facts).'''
   prev_left = 0
   rules_left = len(rules)
+
   while rules_left != prev_left:
     # print(f'{len(rules)} rules left')
-    for (rules_idx, ors) in rev_enum(rules):
-      for (ors_idx, rule) in rev_enum(ors):
-        (key, belief) = rule
+    temp_rules = copy.copy(rules)
+    for (outer_key, ors) in temp_rules.items():
+      temp_clause = copy.copy(ors)
+      for (inner_key, belief) in temp_clause.items():
         # TODO: parallelize lookups with linalg
-        fact = facts[key]
+        fact = facts[inner_key]
         if fact != U:  # if we know something about this fact...
           if belief == fact:
             # data agrees, OR rule satisfied, ditch whole rule
-            del rules[rules_idx]
+            del rules[outer_key]
             break
           else:
             # data clashes, ditch option from rule
-            del ors[ors_idx]
+            del ors[inner_key]
             # del rules[rules_idx][ors_idx]
             # if only one option remains...
             if len(ors) == 1:
-              [(key, belief)] = ors
+              [(key, belief)] = list(ors.items())
               if facts[key] == -belief:  # opposite beliefs
                 # clash detected, report it
                 return (N, [], [])
@@ -136,7 +129,7 @@ def simplify(rules, facts):
                 # consider it fact
                 facts[key] = belief
               # we've exhausted the info in this rule, so get rid of it
-              del rules[rules_idx]
+              del rules[outer_key]
               break
             continue
         # else:  # no data available, nothing to do here
@@ -144,10 +137,6 @@ def simplify(rules, facts):
     rules_left = len(rules)
   sat = U if rules_left else Y
   return (sat, rules, facts)
-
-assert simplify([[(0, Y), (1, Y)]], { 0:Y, 1:U })[0] == Y
-assert simplify([[(0, N), (1, N)]], { 0:Y, 1:Y })[0] == N
-assert simplify([[(0, Y), (1, Y)]], { 0:U, 1:U })[0] == U
 
 def split(rules_, facts_, facts_printer, fact_printer):
   '''guess a fact to proceed after simplify fails.'''
@@ -175,8 +164,6 @@ def split(rules_, facts_, facts_printer, fact_printer):
     if sat == U:
       (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
   return (sat, rules, facts)
-
-assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
 
 def solve_csp(rules, out_file, fact_printer=dict):
   start = time.time()
