@@ -1,21 +1,10 @@
-import numpy as np
-import time
-from sat import *
+from dp import *
 
 # stuff specific to our sudoku representation
 
 # TODO: replace fact representation with a set, as that would work across problem types.
 # complication: this means 123 and -123 are stored separately and we don't check for clashes here.
 # instead remove variable instance from all rules, regarding empty clauses as clashes.
-
-def parse_sudoku(s):
-  '''parse a sudoku fact like '-356' to ((row, col, digit), belief), numbers decremented by 1 to serve as indices'''
-  belief = N if s[0] == '-' else Y
-  if belief == N:
-    s = s[1:]
-  return (s, belief)
-
-assert parse_sudoku('-356') == ('356', N)
 
 def parse_sudoku_line(sudoku):
   clauses = []
@@ -40,16 +29,25 @@ def sudoku_board(facts):
   ROWS = 9
   COLS = 9
   DIGITS = 9
+<<<<<<< HEAD
   board = np.zeros((ROWS, COLS), dtype = np.int32)
+=======
+
+  board = [[]] * ROWS
+  for row in range(ROWS):
+    board[row] = [0] * COLS
+
+>>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c
   for i in range(1,ROWS+1):
     for j in range(1,COLS+1):
       for k in range(1,DIGITS+1):
         key = int(f'{i}{j}{k}')
         if facts[key] == Y:
-          board[(i-1,j-1)] = k
+          board[i-1][j-1] = k
           break
-  return board
+  return '\n'.join([' '.join(map(str, l)) for l in board])
 
+<<<<<<< HEAD
 def_dict = defaultdict(lambda: U, {111: Y })
 assert sudoku_board(def_dict)[0][0] == 1
 
@@ -89,3 +87,7 @@ def solve_sudoku(clauses, sudoku):
 
   # write_dimacs(tmp_file, [[((1,2,3), N)]], eye)
   return True
+=======
+def_dict = defaultdict(lambda: U, { '111': Y })
+assert sudoku_board(def_dict)[0][0] == '1'
+>>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c

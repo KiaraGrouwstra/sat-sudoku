@@ -1,10 +1,14 @@
-import numpy as np
 import copy
 import tempfile
 import os
+import time
 from collections import defaultdict
+<<<<<<< HEAD:src/sat.py
 import copy
 from fetch import *
+=======
+# from fetch import *
+>>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
 
 # constants
 U = 0
@@ -49,15 +53,41 @@ def parse_dimacs(dimacs_file_contents):
       clause_dict[i] = temp_dict
   return clause_dict
 
+<<<<<<< HEAD:src/sat.py
 assert parse_dimacs(['123 -456 0']) == {0:{123:1, 456:-1}}
 assert parse_dimacs(['123 -123 0']) == {}
+=======
+def rev_enum(lst):
+  '''reverse enumeration, so we can safely remove stuff without messing up our indices'''
+  return list(enumerate(lst))[::-1]
 
-def read_file(file, parse_fn):
+assert rev_enum(['a','b']) == [(1, 'b'), (0, 'a')]
+
+def parse_fact(s):
+  '''parse a DIMACS fact like '-356' to (key, belief)'''
+  belief = N if s[0] == '-' else Y
+  if belief == N:
+    s = s[1:]
+  return (s, belief)
+
+assert parse_fact('-356') == ('356', N)
+>>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
+
+def parse_dimacs(lines):
+  '''parse a DIMACS format file with facts based on a parser function, ignoring p/c lines and final 0s'''
+  rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], lines))
+  result = [list(map(parse_fact, line.strip().split(' ')[:-1])) for line in rows]
+  return result
+
+assert parse_dimacs(['123 -456 0']) == [[('123', 1), ('456', -1)]]
+
+def read_file(file):
   '''read a file and parse its lines'''
   with open(file) as f:
     lines = f.readlines()
-  return parse_fn(lines)
+  return parse_dimacs(lines)
 
+<<<<<<< HEAD:src/sat.py
 assert len(read_file(example_fn, parse_dimacs)) == 18
 
 # def write_dimacs(file, rules, ser_fn):
@@ -73,6 +103,19 @@ assert len(read_file(example_fn, parse_dimacs)) == 18
 # tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
 # write_dimacs(tmp_file, [[(1, N)]], str)
 # assert read_file(tmp_file, parse_dimacs(eye)) == [['-1']]
+=======
+# assert len(read_file(example_fn)) == 18
+
+def write_dimacs(file, facts, ser_fn=str):
+  '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''
+  s = '\n'.join([f'{"-" if v == N else ""}{ser_fn(k)} 0' for k,v in facts.items() if v != U])
+  with open(file, 'w') as f:
+    f.write(s)
+
+tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
+write_dimacs(tmp_file, {'123': Y})
+assert read_file(tmp_file) == [[('123', Y)]]
+>>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
@@ -198,4 +241,45 @@ def split(rules_, facts_, facts_printer, fact_printer):
       (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
   return (sat, rules, facts)
 
+<<<<<<< HEAD:src/sat.py
 assert split({0:{0:N, 1:N}}, {0:U, 1:U}, eye, eye)[0] == Y
+=======
+assert split([[(0, N), (1, N)]], { 0:U, 1:U }, eye, eye)[0] == Y
+
+def solve_csp(rules, out_file, fact_printer=dict):
+  start = time.time()
+
+  # print('initialization')
+  facts = defaultdict(lambda: U, {})  # initialize facts as U
+  # print(fact_printer(facts))
+
+  # print('simplify init')
+  (sat, rules, facts) = simplify_initial(rules, facts)
+  # assert sat != N
+  if sat == N:
+    return False
+  # print(fact_printer(facts))
+
+  # print('simplify')
+  (sat, rules, facts) = simplify(rules, facts)
+  # assert sat != N
+  if sat == N:
+    return False
+  # print(fact_printer(facts))
+
+  # print('split to answer')
+  if sat == U:
+    (sat, rules, facts) = split(rules, facts, fact_printer, eye)
+  # assert sat != N
+  if sat == N:
+    return False
+
+  print(f'took {time.time() - start} seconds')
+  # print('final solution')
+  print(fact_printer(facts))
+
+  # This output should again be a DIMACS file, but containing only the truth assignment to all variables (729 for Sudoku, different for other SAT problems). If your input file is called 'filename', then make sure your outputfile is called 'filename.out'. If there is no solution (inconsistent problem), the output can be an empty file. If there are multiple solutions (eg. non-propert Sudoku) you only need to return a single solution.
+  write_dimacs(out_file, facts)
+
+  return sat == Y
+>>>>>>> f64798b4f0084d052876252c2cbde8dd7105935c:src/dp.py
