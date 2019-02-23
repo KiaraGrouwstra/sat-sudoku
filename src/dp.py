@@ -37,26 +37,17 @@ def parse_dimacs(dimacs_file_contents):
       clause_dict[i] = temp_dict
   return clause_dict
 
-assert parse_dimacs(['123 -456 0']) == {0:{123:Y, 456:N}}
-assert parse_dimacs(['123 -123 0']) == {}
-
 def read_file(file):
   '''read a file and parse its lines'''
   with open(file) as f:
     lines = f.readlines()
   return parse_dimacs(lines)
 
-# assert len(read_file(example_fn)) == 18
-
 def write_dimacs(file, facts, ser_fn=str):
   '''write facts to a DIMACS format file based on a serialization function, incl. final 0s'''
   s = '\n'.join([f'{"-" if v == N else ""}{ser_fn(k)} 0' for k,v in facts.items() if v != U])
   with open(file, 'w') as f:
     f.write(s)
-
-tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
-write_dimacs(tmp_file, {'123': Y})
-assert read_file(tmp_file) == {0: {123: 1}}
 
 def pick_guess_fact(rules, facts):
   '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
@@ -66,8 +57,6 @@ def pick_guess_fact(rules, facts):
       (key, is_neg) = (inner_key, belief)
       relevances[key] += 1
   return max(relevances)
-
-assert pick_guess_fact({0:{123:1}}, {}) == 123
 
 # TODO: dedupe logic with simplify
 def simplify_initial(rules, facts):
@@ -106,8 +95,6 @@ def simplify_initial(rules, facts):
 
   sat = U if len(rules) else Y
   return (sat, rules, facts)
-
-assert simplify_initial({0:{111:1}}, {111:1, 222:0})[1] == {}
 
 def simplify(rules, facts):
   '''simplify out unit clauses until we get stuck.
@@ -151,10 +138,6 @@ def simplify(rules, facts):
   sat = U if rules_left else Y
   return (sat, rules, facts)
 
-assert simplify({0:{0:Y, 1:Y}}, {0:Y, 1:U })[0] == Y
-assert simplify({0:{0:N, 1:N}}, {0:Y, 1:Y })[0] == N
-assert simplify({0:{0:Y, 1:Y}}, {0:U, 1:U })[0] == U
-
 def split(rules_, facts_, facts_printer, fact_printer):
   '''guess a fact to proceed after simplify fails.'''
   rules = copy.deepcopy(rules_)
@@ -181,8 +164,6 @@ def split(rules_, facts_, facts_printer, fact_printer):
     if sat == U:
       (sat, rules, facts) = split(rules, facts, facts_printer, fact_printer)
   return (sat, rules, facts)
-
-assert split({0:{0:N, 1:N}}, {0:U, 1:U}, eye, eye)[0] == Y
 
 def solve_csp(rules, out_file, fact_printer=dict):
   start = time.time()

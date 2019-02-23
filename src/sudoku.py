@@ -18,8 +18,6 @@ def parse_sudoku_line(sudoku):
       clauses.append([tpl])
   return clauses
 
-assert parse_sudoku_line('5...68..........6..42.5.......8..9....1....4.9.3...62.7....1..9..42....3.8.......')[0][0] == ('004', Y)
-
 def parse_sudoku_lines(lines):
   return list(map(parse_sudoku_line, lines))
 
@@ -42,9 +40,6 @@ def sudoku_board(facts):
           board[i-1][j-1] = k
           break
   return '\n'.join([' '.join(map(str, l)) for l in board])
-
-def_dict = defaultdict(lambda: U, {111: Y })
-assert sudoku_board(def_dict)[0][0] == 1
 
 def rules_to_dict(clauses, sudoku):
   '''merge rule dicts into a single dict for sudoku'''
