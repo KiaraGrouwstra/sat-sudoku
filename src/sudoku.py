@@ -46,7 +46,7 @@ def sudoku_board(facts):
 def_dict = defaultdict(lambda: U, {111: Y })
 assert sudoku_board(def_dict)[0][0] == 1
 
-def rules_to_dict(clauses, sudoku)
+def rules_to_dict(clauses, sudoku):
   '''merge rule dicts into a single dict for sudoku'''
   clause_list = [[(variable, belief) for variable, belief in clauses[outer_key].items()] for outer_key in clauses]
   example_sudoku_list = [[(variable, belief) for variable, belief in sudoku[outer_key].items()] for outer_key in sudoku]
