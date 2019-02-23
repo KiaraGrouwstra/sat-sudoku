@@ -44,7 +44,7 @@ def sudoku_board(facts):
   return '\n'.join([' '.join(map(str, l)) for l in board])
 
 def_dict = defaultdict(lambda: U, {111: Y })
-assert sudoku_board(def_dict)[0][0] == 1
+assert sudoku_board(def_dict)[0][0] == '1'
 
 def solve_sudoku(clauses, sudoku, out_file, fact_printer=dict):
   # TODO Convert the rules into a dictionary containing the rules + sudoku_example

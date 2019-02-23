@@ -17,6 +17,8 @@ def list_to_dict(lst):
     temp_dict[key] = value
   return temp_dict
 
+assert list_to_dict([(111, 1), (222, -1)]) == {111:1, 222:-1}
+
 def rules_to_dict(clauses, sudoku):
   clause_list = [[(variable, belief) for variable, belief in clauses[outer_key].items()] for outer_key in clauses]
   example_sudoku_list = [[(variable, belief) for variable, belief in sudoku[outer_key].items()] for outer_key in sudoku]
@@ -24,6 +26,8 @@ def rules_to_dict(clauses, sudoku):
   temp_dict_list = list(map(list_to_dict, rules_list))
   rules = {key : value for key, value in enumerate(temp_dict_list)}
   return rules
+
+assert rules_to_dict({0:{111:1, 222:-1}, 1:{555:0, 666:-1}}, {0:{333:0, 444:-1}}) == {0:{111:1, 222:-1}, 1:{555:0, 666:-1}, 2:{333:0, 444:-1}}
 
 def parse_dimacs(dimacs_file_contents):
   clause_dict = {}
@@ -56,7 +60,7 @@ def read_file(file):
     lines = f.readlines()
   return parse_dimacs(lines)
 
-# assert len(read_file(example_fn)) == 18
+#assert len(read_file(example_fn)) == 18
 
 
 def write_dimacs(file, facts, ser_fn=str):
@@ -66,7 +70,7 @@ def write_dimacs(file, facts, ser_fn=str):
     f.write(s)
 
 tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
-write_dimacs(tmp_file, {'123': Y})
+write_dimacs(tmp_file, {123: Y})
 assert read_file(tmp_file) == {0: {123: 1}}
 
 def pick_guess_fact(rules, facts):
