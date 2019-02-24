@@ -7,8 +7,8 @@ import pickle
 # constants
 
 U = 0
-Y = 1
-N = -1
+Y = True
+N = False
 EYE = lambda x: x
 
 # classes
@@ -83,7 +83,8 @@ def simplify_initial(state):
             # if only one option...
             if len(ors) == 1:
                 [(key, belief)] = list(ors.items())
-                if state.facts.get(key, U) == -belief:    # opposite beliefs
+                y = state.facts.get(key, U)
+                if ((y == Y and belief == N) or (y == N and belief == Y)):    # opposite beliefs
                     # clash detected, report it
                     return (N, state)
                 # consider it fact
@@ -133,7 +134,8 @@ def simplify(state):
                         # if only one option remains...
                         if len(ors) == 1:
                             [(key, belief)] = list(ors.items())
-                            if state.facts.get(key, U) == -belief:    # opposite beliefs
+                            y = state.facts.get(key, U)
+                            if ((y == Y and belief == N) or (y == N and belief == Y)):    # opposite beliefs
                                 # clash detected, report it
                                 return (N, state)
                             # consider it fact
@@ -166,7 +168,7 @@ def split(state_, facts_printer, fact_printer):
         (sat, state) = split(state, facts_printer, fact_printer)
     if sat == N:
         # clash detected, backtrack
-        corrected = -guess_value  # opposite of guess
+        corrected = N if guess_value == Y else Y if guess_value == N else U  # opposite of guess
         state_.facts[guess_fact] = corrected
         # TODO: backtrack to assumption of clashing fact?
         print(f'backtrack {print_fact}: {corrected}')
