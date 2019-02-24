@@ -10,7 +10,7 @@ def main():
     '''take cli flags and solve SAT problem'''
     parser = argparse.ArgumentParser()
     parser.add_argument("-S", "--strategy", dest="strategy", type=int, default=1,
-                        help="1 for the basic DP and n=2 or 3 for your two other strategies")
+                        help="1 for the basic DP and n = 2 or 3 for your two other strategies")
     parser.add_argument("-l", "--loglevel", dest="loglevel", type=int, default=1,
                         help="0 for debug, 1 for info (default), 2 for warn, 3 for error")
     parser.add_argument("-p", "--printer", dest="printer", type=int, default=0,
@@ -19,7 +19,7 @@ def main():
                         help='the input file is the concatenation of all required input clauses.')
 
     args = parser.parse_args()
-    assert args.strategy == 1  # TODO: implement strategy cli handling
+    #assert args.strategy == 1  # TODO: implement strategy cli handling
     fact_printer = sudoku_board if args.printer == 1 else dict
 
     lvl = args.loglevel
@@ -29,12 +29,13 @@ def main():
         else logging.INFO
     logging.getLogger().setLevel(loglvl)
 
+    heuristic = args.strategy
     for inputfile in args.inputfiles:
         logging.debug(inputfile)
         clauses = read_file(inputfile)
         logging.debug(clauses)
         out_file = inputfile + '.out'
-        print(solve_csp(clauses, out_file, fact_printer))
+        print(solve_csp(clauses, out_file, heuristic, fact_printer))
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,7 @@ import logging
 from collections import defaultdict
 import random
 import pickle
+import numpy as np
 
 # constants
 
@@ -78,31 +79,42 @@ def pick_guess_fact_random(rules, occurrences):
     available_keys = list(occurrences[Y].keys())
     return(random.choice(available_keys))
 
-def pick_guess_fact_bohm(rules, occurrences, alpha = 1, beta = 2):
-    '''Picks an unassigned variable based on the BOHM heuristic'''
-    bohm = {}
-    counts = {}
+def pick_guess_fact_jw_ts(rules, occurrences):
+    '''Picks decision variable based on the Jeroslow-Wang Two Sided Heuristic'''
     available_keys = list(occurrences[Y].keys())
-    max_clause_size = max([len(x) for x in list(rules.values())])
-    for available_key in available_keys:
-        bohm[available_key], counts[available_key] = {}, {}
-        for clause_size in range(max_clause_size):
-            counts[available_key][clause_size] = {}
-            positive_count = len([1 for clause_index in occurrences[Y][available_key] if len(rules[clause_index]) == clause_size + 1])
-            negative_count = len([1 for clause_index in occurrences[N][available_key] if len(rules[clause_index]) == clause_size + 1])
-            bohm[available_key][clause_size] = alpha * max(positive_count, negative_count) + beta * min(positive_count, negative_count)
-            counts[available_key][clause_size][Y] = positive_count
-            counts[available_key][clause_size][N] = negative_count
-    for clause_size in range(max_clause_size):
-        heuristics = [bohm[available_key][clause_size] for available_key in available_keys]
-        if heuristics.count(max(heuristics)) > 1:
-            continue
-        else:
-            max_key = available_keys[heuristics.index(max(heuristics))]
-            if counts[max_key][clause_size][Y] >= counts[max_key][clause_size][N]:
-                return max_key, Y
-            else:
-                return max_key, N
+    positive_counts = np.array([sum([2 ** -len(rules[clause_index]) for clause_index in occurrences[Y][available_key] if rules.get(clause_index, -1) != -1]) for available_key in available_keys])
+    negative_counts = np.array([sum([2 ** -len(rules[clause_index]) for clause_index in occurrences[N][available_key] if rules.get(clause_index, -1) != -1]) for available_key in available_keys])
+    jw_sum = positive_counts + negative_counts
+    return (available_keys[np.argmax(jw_sum)], Y if positive_counts[np.argmax(jw_sum)] >= negative_counts[np.argmax(jw_sum)] else N)
+
+# def pick_guess_fact_bohm(rules, occurrences, alpha = 1, beta = 2):
+#     '''Picks an unassigned variable based on the BOHM heuristic'''
+#     decision_variable, decision_variable_assignment = None, Y
+#     bohm = {}
+#     counts = {}
+#     available_keys = list(occurrences[Y].keys())
+#     max_clause_size = max([len(x) for x in list(rules.values())])
+#     for available_key in available_keys:
+#         bohm[available_key], counts[available_key] = {}, {}
+#         for clause_size in range(max_clause_size):
+#             counts[available_key][clause_size] = {}
+#             positive_count = len([1 for clause_index in occurrences[Y][available_key] if len(rules.get(clause_index, {})) == clause_size + 1])
+#             negative_count = len([1 for clause_index in occurrences[N][available_key] if len(rules.get(clause_index, {})) == clause_size + 1])
+#             bohm[available_key][clause_size] = alpha * max(positive_count, negative_count) + beta * min(positive_count, negative_count)
+#             counts[available_key][clause_size][Y] = positive_count
+#             counts[available_key][clause_size][N] = negative_count
+#     for clause_size in range(max_clause_size):
+#         heuristics = [bohm[available_key][clause_size] for available_key in available_keys]
+#         if heuristics.count(max(heuristics)) > 1:
+#             continue
+#         else:
+#             max_key = available_keys[heuristics.index(max(heuristics))]
+#             decision_variable = max_key
+#             if counts[max_key][clause_size][Y] >= counts[max_key][clause_size][N]:
+#                 break
+#             else:
+#                 decision_variable_assignment = N
+#     return (decision_variable, decision_variable_assignment)
 
 # TODO: dedupe logic with simplify
 def simplify_initial(state):
@@ -179,13 +191,21 @@ def simplify(state):
     sat = U if rules_left else Y
     return (sat, state)
 
-def split(state_, facts_printer, fact_printer):
+def split(state_, facts_printer, fact_printer, heuristic):
     '''guess a fact to proceed after simplify fails.'''
     state = pickle.loads(pickle.dumps(state_, -1))
 
-    guess_fact = pick_guess_fact(state.rules)
+    if heuristic == 1:
+        guess_fact = pick_guess_fact_random(state.rules, state.occurrences)
+        guess_value = Y
+    elif heuristic == 2:
+        guess_fact = pick_guess_fact(state.rules)
+        guess_value = Y
+    elif heuristic == 3:
+        guess_fact, guess_value = pick_guess_fact_jw_ts(state.rules, state.occurrences)
+
     print_fact = fact_printer(guess_fact)
-    guess_value = Y  # TODO: maybe also guess false?
+    #guess_value = Y  # TODO: maybe also guess false?
     state.facts[guess_fact] = guess_value
     # TODO: to_remove.add(guess_fact)
     logging.info(f'guess     {print_fact}: {guess_value}')
@@ -193,7 +213,7 @@ def split(state_, facts_printer, fact_printer):
     (sat, state) = simplify(state)
 
     if sat == U:
-        (sat, state) = split(state, facts_printer, fact_printer)
+        (sat, state) = split(state, facts_printer, fact_printer, heuristic)
     if sat == N:
         # clash detected, backtrack
         corrected = -guess_value  # opposite of guess
@@ -203,7 +223,7 @@ def split(state_, facts_printer, fact_printer):
         logging.debug(facts_printer(state.facts))
         (sat, state) = simplify(state_)
         if sat == U:
-            (sat, state) = split(state, facts_printer, fact_printer)
+            (sat, state) = split(state, facts_printer, fact_printer, heuristic)
     return (sat, state)
 
 def get_occurrences(rules, belief):
@@ -218,7 +238,7 @@ def get_occurrences(rules, belief):
                 belief_occurrences[key] = idx_set
     return dict(belief_occurrences)
 
-def solve_csp(rules, out_file, fact_printer=dict):
+def solve_csp(rules, out_file, heuristic=1, fact_printer=dict):
     '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
     start = time.time()
 
@@ -244,7 +264,7 @@ def solve_csp(rules, out_file, fact_printer=dict):
 
     logging.debug('split to answer')
     if sat == U:
-        (sat, state) = split(state, fact_printer, EYE)
+        (sat, state) = split(state, fact_printer, EYE, heuristic)
     # assert sat != N
     if sat == N:
         return False
