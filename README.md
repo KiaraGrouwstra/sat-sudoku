@@ -8,7 +8,7 @@ a SAT solver using sudokus
 # as a command (*nix environment)
 src/SAT -S1 -p1 ./data/sudoku-example-full.txt
 # as a Python script (cross-platform)
-python src/SAT.py -p1 -S1 ./data/sudoku-example-full.txt
+python src/sat.py -p1 -S1 ./data/sudoku-example-full.txt
 
 # running by docker
 
