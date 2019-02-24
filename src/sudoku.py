@@ -1,5 +1,5 @@
 '''stuff specific to our sudoku representation'''
-from dp import solve_csp, Y
+from dp import solve_csp, Y, U
 
 # TODO: replace fact representation with a set, as that would work across problem types.
 # complication: this means 123 and -123 are stored separately and we don't check for clashes here.
@@ -37,10 +37,10 @@ def sudoku_board(facts):
         for j in range(1, cols+1):
             for k in range(1, digits+1):
                 key = int(f'{i}{j}{k}')
-                if facts[key] == Y:
+                if facts.get(key, U) == Y:
                     board[i-1][j-1] = k
                     break
-    return '\n'.join([' '.join(map(str, l)) for l in board])
+    return '\n' + '\n'.join([' '.join(map(str, l)) for l in board])
 
 def rules_to_dict(clauses, sudoku):
     '''merge rule dicts into a single dict for sudoku'''

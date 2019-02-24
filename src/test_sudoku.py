@@ -11,4 +11,4 @@ def test_parse_sudoku_line():
 def test_sudoku_board():
     '''test'''
     def_dict = defaultdict(lambda: U, {111: Y})
-    assert sudoku_board(def_dict)[0][0] == '1'
+    assert sudoku_board(def_dict)[1][0] == '1'
