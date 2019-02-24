@@ -178,6 +178,7 @@ def get_occurrences(rules, belief):
         for key, val in ors.items():
             if val == belief:
                 belief_occurrences[key].add(line)
+    return belief_occurrences
 
 def solve_csp(rules, out_file, fact_printer=dict):
     '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
@@ -185,7 +186,7 @@ def solve_csp(rules, out_file, fact_printer=dict):
 
     # print('initialization')
     # initialize facts as U
-    facts = defaultdict(lambda _: U, {})
+    facts = defaultdict(lambda: U, {})
     # print(fact_printer(facts))
     state = State(rules, facts)
 

@@ -28,7 +28,7 @@ def test_simplify_initial():
     rules = {0:{111:Y}}
     facts = {111:Y, 222:U}
     state = State(rules, facts)
-    assert simplify_initial(state)[1] == {}
+    assert simplify_initial(state)[1].rules == {}
 
 def test_simplify():
     '''test'''
@@ -54,4 +54,4 @@ def test_split():
 
 def test_get_occurrences():
     '''test'''
-    assert get_occurrences({123: {0:Y, 1:N}}, Y) == {0:set([])}
+    assert get_occurrences({123: {0:Y, 1:N}}, Y) == {0:set([123])}
