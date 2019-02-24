@@ -2,6 +2,7 @@
 import copy
 import time
 from collections import defaultdict
+import pickle
 
 # constants
 
@@ -19,11 +20,9 @@ class State:
     occurrences: dict
 
     def __init__(self, rules, facts):
-    # def __init__(self, rules, facts, occurrences):
         self.rules = rules
         self.facts = facts
-        # self.occurrences = {belief: get_occurrences(rules, belief) for belief in [Y, N]}
-        # self.occurrences = occurrences
+        self.occurrences = {belief: get_occurrences(rules, belief) for belief in [Y, N]}
 
 # Necessary Helper Functions
 
@@ -84,7 +83,7 @@ def simplify_initial(state):
             # if only one option...
             if len(ors) == 1:
                 [(key, belief)] = list(ors.items())
-                if state.facts[key] == -belief:    # opposite beliefs
+                if state.facts.get(key, U) == -belief:    # opposite beliefs
                     # clash detected, report it
                     return (N, state)
                 # consider it fact
@@ -92,8 +91,9 @@ def simplify_initial(state):
                 # TODO: to_remove.add(guess_fact)
                 # we've exhausted the info in this rule, so get rid of it
                 del state.rules[rules_idx]
-                # state.occurrences[belief][key].remove(rules_idx)
-                # TODO: if not occurrences[belief][key]: check other belief, if both empty ditch both,
+                # occs = state.occurrences[belief].get(key, set())
+                # occs.remove(rules_idx)
+                # TODO: if not occs: check other belief, if both empty ditch both,
                 # if other exists, trigger pure literal clause, setting the belief to that other value
                 continue
 
@@ -115,7 +115,7 @@ def simplify(state):
             temp_clause = copy.copy(ors)
             for (inner_key, belief) in temp_clause.items():
                 # TODO: parallelize lookups with linalg
-                fact = state.facts[inner_key]
+                fact = state.facts.get(inner_key, U)
                 if fact != U:    # if we know something about this fact...
                     if belief == fact:
                         # data agrees, OR rule satisfied, ditch whole rule
@@ -124,15 +124,16 @@ def simplify(state):
                     else:
                         # data clashes, ditch option from rule
                         del ors[inner_key]
-                        # state.occurrences[belief][inner_key].remove(rules_idx)
-                        # TODO: if not occurrences[belief][key]: check other belief,
+                        # occs = state.occurrences[belief].get(inner_key, set())
+                        # occs.remove(rules_idx)
+                        # TODO: if not occs: check other belief,
                         # if both empty ditch both, if other exists,
                         # trigger pure literal clause, setting the belief to that other value
                         # del state.rules[rules_idx][ors_idx]
                         # if only one option remains...
                         if len(ors) == 1:
                             [(key, belief)] = list(ors.items())
-                            if state.facts[key] == -belief:    # opposite beliefs
+                            if state.facts.get(key, U) == -belief:    # opposite beliefs
                                 # clash detected, report it
                                 return (N, state)
                             # consider it fact
@@ -150,14 +151,14 @@ def simplify(state):
 
 def split(state_, facts_printer, fact_printer):
     '''guess a fact to proceed after simplify fails.'''
-    state = copy.deepcopy(state_)
+    state = pickle.loads(pickle.dumps(state_, -1))
 
     guess_fact = pick_guess_fact(state.rules)
-    # print_fact = fact_printer(guess_fact)
+    print_fact = fact_printer(guess_fact)
     guess_value = Y  # TODO: maybe also guess false?
     state.facts[guess_fact] = guess_value
     # TODO: to_remove.add(guess_fact)
-    # print(f'guess     {print_fact}: {guess_value}')
+    print(f'guess     {print_fact}: {guess_value}')
     # print(facts_printer(facts))
     (sat, state) = simplify(state)
 
@@ -168,7 +169,7 @@ def split(state_, facts_printer, fact_printer):
         corrected = -guess_value  # opposite of guess
         state_.facts[guess_fact] = corrected
         # TODO: backtrack to assumption of clashing fact?
-        # print(f'backtrack {print_fact}: {corrected}')
+        print(f'backtrack {print_fact}: {corrected}')
         # print(facts_printer(state.facts))
         (sat, state) = simplify(state_)
         if sat == U:
@@ -177,11 +178,11 @@ def split(state_, facts_printer, fact_printer):
 
 def get_occurrences(rules, belief):
     '''get rule occurrences for a belief, e.g. { 123: set([3, 10]) }'''
-    belief_occurrences = defaultdict(lambda: set())
+    belief_occurrences = {}
     for line, ors in rules.items():
         for key, val in ors.items():
             if val == belief:
-                belief_occurrences[key].add(line)
+                belief_occurrences.get(key, set()).add(line)
     return belief_occurrences
 
 def solve_csp(rules, out_file, fact_printer=dict):
@@ -190,7 +191,7 @@ def solve_csp(rules, out_file, fact_printer=dict):
 
     # print('initialization')
     # initialize facts as U
-    facts = defaultdict(lambda: U, {})
+    facts = {}
     # print(fact_printer(facts))
     state = State(rules, facts)
     # occurrences = {belief: get_occurrences(rules, belief) for belief in [Y, N]}
