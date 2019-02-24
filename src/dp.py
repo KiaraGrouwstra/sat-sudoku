@@ -77,27 +77,23 @@ def simplify_initial(state):
     '''do a one-time clean-up of pure-literal clauses.'''
     temp_rules = copy.copy(state.rules)
     for (rules_idx, ors) in temp_rules.items():
-
-        res = {}
-        for (key, belief) in ors.items():
-            # clean out unit clauses
-            # TODO: properly implement pure literal removal
-            # if only one option...
-            if len(ors) == 1:
-                [(key, belief)] = list(ors.items())
-                if state.facts.get(key, U) == -belief:    # opposite beliefs
-                    # clash detected, report it
-                    return (N, state)
-                # consider it fact
-                state.facts[key] = belief
-                # TODO: to_remove.add(guess_fact)
-                # we've exhausted the info in this rule, so get rid of it
-                del state.rules[rules_idx]
-                # occs = state.occurrences[belief].get(key, set())
-                # occs.remove(rules_idx)
-                # TODO: if not occs: check other belief, if both empty ditch both,
-                # if other exists, trigger pure literal clause, setting the belief to that other value
-                continue
+        # clean out unit clauses
+        # TODO: properly implement pure literal removal
+        # if only one option...
+        if len(ors) == 1:
+            [(key, belief)] = list(ors.items())
+            if state.facts.get(key, U) == -belief:    # opposite beliefs
+                # clash detected, report it
+                return (N, state)
+            # consider it fact
+            state.facts[key] = belief
+            # TODO: to_remove.add(guess_fact)
+            # we've exhausted the info in this rule, so get rid of it
+            del state.rules[rules_idx]
+            # occs = state.occurrences[belief].get(key, set())
+            # occs.discard(rules_idx)
+            # TODO: if not occs: check other belief, if both empty ditch both,
+            # if other exists, trigger pure literal clause, setting the belief to that other value
 
     sat = U if state.rules else Y
     return (sat, state)
@@ -127,7 +123,7 @@ def simplify(state):
                         # data clashes, ditch option from rule
                         del ors[inner_key]
                         # occs = state.occurrences[belief].get(inner_key, set())
-                        # occs.remove(rules_idx)
+                        # occs.discard(rules_idx)
                         # TODO: if not occs: check other belief,
                         # if both empty ditch both, if other exists,
                         # trigger pure literal clause, setting the belief to that other value
