@@ -2,7 +2,6 @@
 import copy
 import time
 from collections import defaultdict
-from dataclasses import dataclass
 
 # constants
 
@@ -11,13 +10,18 @@ Y = 1
 N = -1
 EYE = lambda x: x
 
-# data classes
+# classes
 
-@dataclass
 class State:
+    '''container for our solver state'''
     rules: dict
     facts: dict
     occurrences: dict
+
+    def __init__(self, rules, facts):
+        self.rules = rules
+        self.facts = facts
+        self.occurrences = {belief: get_occurrences(rules, belief) for belief in [Y, N]}
 
 # Necessary Helper Functions
 
@@ -58,7 +62,7 @@ def write_dimacs(path, facts, ser_fn=str):
         file.write(strn)
 
 def pick_guess_fact(rules):
-    '''pick a fact to guess. presume all known facts are pruned from rules (by simplify_initial), so only tally facts in rules.'''
+    '''pick a fact to guess. presume all known facts are pruned, so only tally facts in rules.'''
     relevances = defaultdict(lambda: 0, {})
     for ors in rules.values():
         for key in ors:
@@ -72,7 +76,7 @@ def simplify_initial(state):
     for (rules_idx, ors) in temp_rules.items():
 
         # clean out unit clauses
-        # TODO: properly implement pure literal removal, which actually means checking if a variable only has positive/negative occurrences left!
+        # TODO: properly implement pure literal removal
         # if only one option...
         if len(ors) == 1:
             [(key, belief)] = list(ors.items())
@@ -85,10 +89,11 @@ def simplify_initial(state):
             # we've exhausted the info in this rule, so get rid of it
             del state.rules[rules_idx]
             state.occurrences[belief][key].remove(rules_idx)
-            # TODO: if not len(occurrences[belief][key]): check other belief, if both empty ditch both, if other exists, trigger pure literal clause, setting the belief to that other value
+            # TODO: if not occurrences[belief][key]: check other belief, if both empty ditch both,
+            # if other exists, trigger pure literal clause, setting the belief to that other value
             continue
 
-    sat = U if len(state.rules) != 0 else Y
+    sat = U if state.rules else Y
     return (sat, state)
 
 def simplify(state):
@@ -101,7 +106,7 @@ def simplify(state):
     # TODO: do not full iterations but grab from to_remove
     while rules_left != prev_left:
         # print(f'{len(rules)} rules left')
-        temp_rules = copy.copy(rules)
+        temp_rules = copy.copy(state.rules)
         for (rules_idx, ors) in temp_rules.items():
             temp_clause = copy.copy(ors)
             for (inner_key, belief) in temp_clause.items():
@@ -116,7 +121,9 @@ def simplify(state):
                         # data clashes, ditch option from rule
                         del ors[inner_key]
                         state.occurrences[belief][inner_key].remove(rules_idx)
-                        # TODO: if not len(state.occurrences[belief][key]): check other belief, if both empty ditch both, if other exists, trigger pure literal clause, setting the belief to that other value
+                        # TODO: if not occurrences[belief][key]: check other belief,
+                        # if both empty ditch both, if other exists,
+                        # trigger pure literal clause, setting the belief to that other value
                         # del state.rules[rules_idx][ors_idx]
                         # if only one option remains...
                         if len(ors) == 1:
@@ -125,7 +132,7 @@ def simplify(state):
                                 # clash detected, report it
                                 return (N, state)
                             # consider it fact
-                            facts[key] = belief
+                            state.facts[key] = belief
                             # TODO: to_remove.add(guess_fact)
                             # we've exhausted the info in this rule, so get rid of it
                             del state.rules[rules_idx]
@@ -142,7 +149,7 @@ def split(state_, facts_printer, fact_printer):
     state = copy.deepcopy(state_)
 
     guess_fact = pick_guess_fact(state.rules)
-    print_fact = fact_printer(guess_fact)
+    # print_fact = fact_printer(guess_fact)
     guess_value = Y  # TODO: maybe also guess false?
     state.facts[guess_fact] = guess_value
     # TODO: to_remove.add(guess_fact)
@@ -155,7 +162,7 @@ def split(state_, facts_printer, fact_printer):
     if sat == N:
         # clash detected, backtrack
         corrected = -guess_value  # opposite of guess
-        facts_[guess_fact] = corrected
+        state_.facts[guess_fact] = corrected
         # TODO: backtrack to assumption of clashing fact?
         # print(f'backtrack {print_fact}: {corrected}')
         # print(facts_printer(state.facts))
@@ -168,19 +175,19 @@ def get_occurrences(rules, belief):
     '''get rule occurrences for a belief, e.g. { 123: set([3, 10]) }'''
     belief_occurrences = defaultdict(lambda: set())
     for line, ors in rules.items():
-        for k, v in ors.items():
-            if v == belief:
-                belief_occurrences[k].add(line)
+        for key, val in ors.items():
+            if val == belief:
+                belief_occurrences[key].add(line)
 
 def solve_csp(rules, out_file, fact_printer=dict):
+    '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
     start = time.time()
 
     # print('initialization')
     # initialize facts as U
-    facts = defaultdict(lambda: U, {})
+    facts = defaultdict(lambda _: U, {})
     # print(fact_printer(facts))
-    occurrences = { belief: get_occurrences(rules, belief) for belief in [Y, N] }
-    state = State(rules, facts, occurrences)
+    state = State(rules, facts)
 
     # print('simplify init')
     (sat, state) = simplify_initial(state)

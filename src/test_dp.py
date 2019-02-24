@@ -2,7 +2,7 @@
 import os
 import tempfile
 from dp import parse_dimacs, read_file, write_dimacs, pick_guess_fact, simplify_initial, \
-               simplify, split, Y, N, U, EYE
+               simplify, split, Y, N, U, EYE, get_occurrences, State
 
 def test_parse_dimacs():
     '''test'''
@@ -25,17 +25,32 @@ def test_pick_guess_fact():
 
 def test_simplify_initial():
     '''test'''
-    assert simplify_initial({0:{111:1}}, {111:1, 222:0})[1] == {}
+    rules = {0:{111:Y}}
+    facts = {111:Y, 222:U}
+    state = State(rules, facts)
+    assert simplify_initial(state)[1] == {}
 
 def test_simplify():
     '''test'''
-    assert simplify({0:{0:Y, 1:Y}}, {0:Y, 1:U})[0] == Y
-    assert simplify({0:{0:N, 1:N}}, {0:Y, 1:Y})[0] == N
-    assert simplify({0:{0:Y, 1:Y}}, {0:U, 1:U})[0] == U
+    rules = {0:{0:Y, 1:Y}}
+    facts = {0:Y, 1:U}
+    state = State(rules, facts)
+    assert simplify(state)[0] == Y
+    rules = {0:{0:N, 1:N}}
+    facts = {0:Y, 1:Y}
+    state = State(rules, facts)
+    assert simplify(state)[0] == N
+    rules = {0:{0:Y, 1:Y}}
+    facts = {0:U, 1:U}
+    state = State(rules, facts)
+    assert simplify(state)[0] == U
 
 def test_split():
     '''test'''
-    assert split({0:{0:N, 1:N}}, {0:U, 1:U}, EYE, EYE)[0] == Y
+    rules = {0:{0:N, 1:N}}
+    facts = {0:U, 1:U}
+    state = State(rules, facts)
+    assert split(state, EYE, EYE)[0] == Y
 
 def test_get_occurrences():
     '''test'''
