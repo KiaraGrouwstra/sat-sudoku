@@ -178,12 +178,12 @@ def split(state_, facts_printer, fact_printer):
 
 def get_occurrences(rules, belief):
     '''get rule occurrences for a belief, e.g. { 123: set([3, 10]) }'''
-    belief_occurrences = {}
+    belief_occurrences = defaultdict(lambda: set())
     for line, ors in rules.items():
         for key, val in ors.items():
             if val == belief:
                 belief_occurrences.get(key, set()).add(line)
-    return belief_occurrences
+    return dict(belief_occurrences)
 
 def solve_csp(rules, out_file, fact_printer=dict):
     '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
