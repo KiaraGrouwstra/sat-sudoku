@@ -63,6 +63,32 @@ def pick_guess_fact_random(rules, occurrences):
     available_keys = list(occurrences[Y].keys())
     return(random.choice(available_keys))
 
+def pick_guess_fact_bohm(rules, occurrences, alpha = 1, beta = 2):
+    '''Picks an unassigned variable based on the BOHM heuristic'''
+    bohm = {}
+    counts = {}
+    available_keys = list(occurrences[Y].keys())
+    max_clause_size = max([len(x) for x in list(rules.values())])
+    for available_key in available_keys:
+        bohm[available_key], counts[available_key] = {}, {}
+        for clause_size in range(max_clause_size):
+            counts[available_key][clause_size] = {}
+            positive_count = len([1 for clause_index in occurrences[Y][available_key] if len(rules[clause_index]) == clause_size + 1])
+            negative_count = len([1 for clause_index in occurrences[N][available_key] if len(rules[clause_index]) == clause_size + 1])
+            bohm[available_key][clause_size] = alpha * max(positive_count, negative_count) + beta * min(positive_count, negative_count)
+            counts[available_key][clause_size][Y] = positive_count
+            counts[available_key][clause_size][N] = negative_count
+    for clause_size in range(max_clause_size):
+        heuristics = [bohm[available_key][clause_size] for available_key in available_keys]
+        if heuristics.count(max(heuristics)) > 1:
+            continue
+        else:
+            max_key = available_keys[heuristics.index(max(heuristics))]
+            if counts[max_key][clause_size][Y] >= counts[max_key][clause_size][N]:
+                return max_key, Y
+            else:
+                return max_key, N
+
 # TODO: dedupe logic with simplify
 def simplify_initial(rules, facts):
     '''do a one-time clean-up of tautologies and pure-literal clauses.'''
