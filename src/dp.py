@@ -2,6 +2,7 @@
 import copy
 import time
 from collections import defaultdict
+import random
 
 # constants
 
@@ -56,6 +57,11 @@ def pick_guess_fact(rules):
         for key in ors:
             relevances[key] += 1
     return max(relevances)
+
+def pick_guess_fact_random(rules, occurrences):
+    '''Picks an unassigned variable at random'''
+    available_keys = list(occurrences[Y].keys())
+    return(random.choice(available_keys))
 
 # TODO: dedupe logic with simplify
 def simplify_initial(rules, facts):
