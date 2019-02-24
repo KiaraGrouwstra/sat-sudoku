@@ -22,7 +22,7 @@ def main():
         clauses = read_file(inputfile)
         # print(clauses)
         out_file = inputfile + '.out'
-        assert solve_csp(clauses, out_file, fact_printer)
+        print(solve_csp(clauses, out_file, fact_printer))
 
 if __name__ == "__main__":
     main()

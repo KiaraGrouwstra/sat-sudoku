@@ -10,12 +10,12 @@ def parse_sudoku_line(sudoku):
     clauses = []
     for i, char in enumerate(sudoku.strip()):
         if char != ".":
-            row = i // 9
-            col = i % 9
-            digit = int(char) - 1
+            row = (i // 9) + 1
+            col = (i % 9) + 1
+            digit = int(char)
             key = f'{row}{col}{digit}'
             tpl = (key, Y)
-            clauses.append([tpl])
+            clauses.append(tpl)
     return clauses
 
 def parse_sudoku_lines(lines):

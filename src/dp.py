@@ -189,9 +189,9 @@ def solve_csp(rules, out_file, fact_printer=dict):
     if sat == N:
         return False
 
-    print(f'took {time.time() - start} seconds')
+    #print(f'took {time.time() - start} seconds')
     # print('final solution')
-    print(fact_printer(facts))
+    #print(fact_printer(facts))
 
     # output DIMACS file 'filename.out' with truth assignments, TODO: empty if inconsistent.
     write_dimacs(out_file, facts)
