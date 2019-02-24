@@ -184,7 +184,10 @@ def get_occurrences(rules, belief):
     for line, ors in rules.items():
         for key, val in ors.items():
             if val == belief:
-                belief_occurrences.get(key, set()).add(line)
+                # TODO: find alternative to this snippet that doesn't add 0.07s
+                idx_set = belief_occurrences.get(key, set())
+                idx_set.add(line)
+                belief_occurrences[key] = idx_set
     return dict(belief_occurrences)
 
 def solve_csp(rules, out_file, fact_printer=dict):
