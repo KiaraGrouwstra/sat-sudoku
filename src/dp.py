@@ -27,28 +27,29 @@ class State:
 
 # Necessary Helper Functions
 
+def parse_dimacs_row(row):
+    '''parse a line from a dimacs file into a dict, or None in case of a tautology'''
+    dic = {}
+    for term in row.split(' ')[:-1]:
+        is_neg = term[0] == '-'
+        key = int(term[1:]) if is_neg else int(term)
+        val = N if is_neg else Y
+        if key not in dic:
+            dic[key] = val
+        elif dic[key] != val:
+            # different truth value known for this key, tautology detected
+            return None
+    return dic
+
 def parse_dimacs(dimacs_file_contents):
-    '''parse a dimacs file to rules (dict of dicts)'''
+    '''parse a dimacs file to rules (dict of dicts), cleaning out tautologies'''
     clause_dict = {}
     rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], dimacs_file_contents))
     for i in range(len(rows)):
-        temp_dict = {}
-        tautology = False
-        term_list = rows[i].split(' ')[:-1]
-        for term in term_list:
-            is_neg = term[0] == '-'
-            key = int(term[1:]) if is_neg else int(term)
-            val = N if is_neg else Y
-            if key not in temp_dict:
-                temp_dict[key] = val
-            else:
-                if temp_dict[key] == val:
-                    continue
-                else:
-                    tautology = True
-                    break
-        if not tautology:
-            clause_dict[i] = temp_dict
+        clause = parse_dimacs_row(rows[i])
+        # skip tautologies
+        if clause:
+            clause_dict[i] = clause
     return clause_dict
 
 def read_file(path):
@@ -73,7 +74,7 @@ def pick_guess_fact(rules):
 
 # TODO: dedupe logic with simplify
 def simplify_initial(state):
-    '''do a one-time clean-up of tautologies and pure-literal clauses.'''
+    '''do a one-time clean-up of pure-literal clauses.'''
     temp_rules = copy.copy(state.rules)
     for (rules_idx, ors) in temp_rules.items():
 

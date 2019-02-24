@@ -2,7 +2,12 @@
 import os
 import tempfile
 from dp import parse_dimacs, read_file, write_dimacs, pick_guess_fact, simplify_initial, \
-               simplify, split, Y, N, U, EYE, get_occurrences, State
+               simplify, split, Y, N, U, EYE, get_occurrences, State, parse_dimacs_row
+
+def test_parse_dimacs_row():
+    '''test'''
+    assert parse_dimacs_row('123 -456 0') == {123:Y, 456:N}
+    assert parse_dimacs_row('123 -123 0') == None
 
 def test_parse_dimacs():
     '''test'''
