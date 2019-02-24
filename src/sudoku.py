@@ -1,55 +1,59 @@
-from dp import *
-
-# stuff specific to our sudoku representation
+'''stuff specific to our sudoku representation'''
+from dp import solve_csp, Y
 
 # TODO: replace fact representation with a set, as that would work across problem types.
 # complication: this means 123 and -123 are stored separately and we don't check for clashes here.
 # instead remove variable instance from all rules, regarding empty clauses as clashes.
 
 def parse_sudoku_line(sudoku):
-  clauses = []
-  for i, char in enumerate(sudoku.strip()):
-    if char != ".":
-      row = i // 9
-      col = i % 9
-      digit = int(char) - 1
-      key = f'{row}{col}{digit}'
-      tpl = (key, Y)
-      clauses.append([tpl])
-  return clauses
+    '''parse a line like 234.23.43.2 to a list of clauses'''
+    clauses = []
+    for i, char in enumerate(sudoku.strip()):
+        if char != ".":
+            row = i // 9
+            col = i % 9
+            digit = int(char) - 1
+            key = f'{row}{col}{digit}'
+            tpl = (key, Y)
+            clauses.append([tpl])
+    return clauses
 
 def parse_sudoku_lines(lines):
-  return list(map(parse_sudoku_line, lines))
+    '''parse sudoku lines like 3432.23.4322'''
+    return list(map(parse_sudoku_line, lines))
 
 def sudoku_board(facts):
-  '''return a human-friendly 2D sudoku representation. works only after it's solved!
-     find the most likely number for each tile, and convert back from index to digit (+1).'''
-  ROWS = 9
-  COLS = 9
-  DIGITS = 9
+    '''return a human-friendly 2D sudoku representation. works only after it's solved!
+        find the most likely number for each tile, and convert back from index to digit (+1).'''
+    rows = 9
+    cols = 9
+    digits = 9
 
-  board = [[]] * ROWS
-  for row in range(ROWS):
-    board[row] = [0] * COLS
+    board = [[]] * rows
+    for row in range(rows):
+        board[row] = [0] * cols
 
-  for i in range(1,ROWS+1):
-    for j in range(1,COLS+1):
-      for k in range(1,DIGITS+1):
-        key = int(f'{i}{j}{k}')
-        if facts[key] == Y:
-          board[i-1][j-1] = k
-          break
-  return '\n'.join([' '.join(map(str, l)) for l in board])
+    for i in range(1, rows+1):
+        for j in range(1, cols+1):
+            for k in range(1, digits+1):
+                key = int(f'{i}{j}{k}')
+                if facts[key] == Y:
+                    board[i-1][j-1] = k
+                    break
+    return '\n'.join([' '.join(map(str, l)) for l in board])
 
 def rules_to_dict(clauses, sudoku):
-  '''merge rule dicts into a single dict for sudoku'''
-  clause_list = [[(variable, belief) for variable, belief in clauses[outer_key].items()] for outer_key in clauses]
-  example_sudoku_list = [[(variable, belief) for variable, belief in sudoku[outer_key].items()] for outer_key in sudoku]
-  rules_list = clause_list + example_sudoku_list
-  temp_dict_list = list(map(dict, rules_list))
-  rules = {key : value for key, value in enumerate(temp_dict_list)}
-  return rules
+    '''merge rule dicts into a single dict for sudoku'''
+    clause_list = [[(variable, belief) for variable, belief in clauses[outer_key].items()]
+                   for outer_key in clauses]
+    example_sudoku_list = [[(variable, belief) for variable, belief in sudoku[outer_key].items()]
+                           for outer_key in sudoku]
+    rules_list = clause_list + example_sudoku_list
+    temp_dict_list = list(map(dict, rules_list))
+    rules = {key : value for key, value in enumerate(temp_dict_list)}
+    return rules
 
 def solve_sudoku(clauses, sudoku, out_file, fact_printer=dict):
-  rules = rules_to_dict(clauses, sudoku)
-  return solve_csp(rules, out_file, fact_printer=dict)
+    '''solve a sudoku given separate rules / game state'''
+    rules = rules_to_dict(clauses, sudoku)
+    return solve_csp(rules, out_file, fact_printer)
