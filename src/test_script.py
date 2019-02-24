@@ -16,7 +16,7 @@ def convert_to_dimacs_string(sudoku_problems_list):
 # Test Code
 
 #Fetching the sudoku problem(s)
-file_name = fetch.get_sudoku('top870.sdk.txt')
+file_name = fetch.get_sudoku('top91.sdk.txt')
 with open(file_name) as f:
     sudoku_problems = f.readlines() #List of strings where each string is a sudoku problem of the form '.34..23..etc'
 
@@ -31,16 +31,16 @@ sudoku_dimacs_string_list = convert_to_dimacs_string(sudoku_problems)
 sudoku_full_problem_list = [''.join(sudoku_rules) + ''.join(sudoku_dimacs_string_list[i]) for i in range(len(sudoku_dimacs_string_list))]
 
 #Writing to a file
-open('output.txt', 'w').close()
+open('output.out', 'w').close()
 for i in range(len(sudoku_full_problem_list)):
     print(i+1)
-    with open(fetch.get_sudoku('sudoku-example-full-test.txt'), 'w') as f:
+    with open(fetch.get_sudoku('sudoku-example-full-test.out'), 'w') as f:
         f.write(sudoku_full_problem_list[i])
-    os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.txt >> output.txt')
-    #os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.txt')
+    os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.out >> output.out')
+    #os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.out')
 
 #Retrieving the output from the output file
-with open(os.path.join(os.getcwd(), 'output.txt')) as f:
+with open(os.path.join(os.getcwd(), 'output.out')) as f:
     solved = f.readlines()
 solved = [s[0:len(s)-1] == 'True' for s in solved]
 if all(solved):
