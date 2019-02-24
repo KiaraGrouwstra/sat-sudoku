@@ -1,6 +1,7 @@
 '''generic functions related to Davis-Putnam not specific to sudoku'''
 import copy
 import time
+import logging
 from collections import defaultdict
 import pickle
 
@@ -109,7 +110,7 @@ def simplify(state):
     # TODO: instead of deletes create new list for the whole pass?
     # TODO: do not full iterations but grab from to_remove
     while rules_left != prev_left:
-        # print(f'{len(rules)} rules left')
+        logging.debug(f'{len(state.rules)} rules left')
         temp_rules = copy.copy(state.rules)
         for (rules_idx, ors) in temp_rules.items():
             temp_clause = copy.copy(ors)
@@ -158,8 +159,8 @@ def split(state_, facts_printer, fact_printer):
     guess_value = Y  # TODO: maybe also guess false?
     state.facts[guess_fact] = guess_value
     # TODO: to_remove.add(guess_fact)
-    print(f'guess     {print_fact}: {guess_value}')
-    # print(facts_printer(facts))
+    logging.info(f'guess     {print_fact}: {guess_value}')
+    logging.debug(facts_printer(state.facts))
     (sat, state) = simplify(state)
 
     if sat == U:
@@ -169,8 +170,8 @@ def split(state_, facts_printer, fact_printer):
         corrected = -guess_value  # opposite of guess
         state_.facts[guess_fact] = corrected
         # TODO: backtrack to assumption of clashing fact?
-        print(f'backtrack {print_fact}: {corrected}')
-        # print(facts_printer(state.facts))
+        logging.info(f'backtrack {print_fact}: {corrected}')
+        logging.debug(facts_printer(state.facts))
         (sat, state) = simplify(state_)
         if sat == U:
             (sat, state) = split(state, facts_printer, fact_printer)
@@ -189,38 +190,36 @@ def solve_csp(rules, out_file, fact_printer=dict):
     '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
     start = time.time()
 
-    # print('initialization')
+    logging.debug('initialization')
     # initialize facts as U
     facts = {}
-    # print(fact_printer(facts))
+    logging.debug(fact_printer(facts))
     state = State(rules, facts)
-    # occurrences = {belief: get_occurrences(rules, belief) for belief in [Y, N]}
-    # state = State(rules, facts, occurrences)
 
-    # print('simplify init')
+    logging.debug('simplify init')
     (sat, state) = simplify_initial(state)
     # assert sat != N
     if sat == N:
         return False
-    # print(fact_printer(state.facts))
+    logging.debug(fact_printer(state.facts))
 
-    # print('simplify')
+    logging.debug('simplify')
     (sat, state) = simplify(state)
     # assert sat != N
     if sat == N:
         return False
-    # print(fact_printer(state.facts))
+    logging.debug(fact_printer(state.facts))
 
-    # print('split to answer')
+    logging.debug('split to answer')
     if sat == U:
         (sat, state) = split(state, fact_printer, EYE)
     # assert sat != N
     if sat == N:
         return False
 
-    print(f'took {time.time() - start} seconds')
-    # print('final solution')
-    print(fact_printer(state.facts))
+    logging.warning(f'took {time.time() - start} seconds')
+    logging.debug('final solution')
+    logging.warning(fact_printer(state.facts))
 
     # output DIMACS file 'filename.out' with truth assignments, TODO: empty if inconsistent.
     write_dimacs(out_file, state.facts)
