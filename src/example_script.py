@@ -16,7 +16,7 @@ def convert_to_dimacs_string(sudoku_problems_list):
 # Test Code
 
 #Fetching the sudoku problem(s)
-file_name = fetch.get_sudoku('top91.sdk.txt')
+file_name = fetch.get_sudoku('test_sudoku.out')
 with open(file_name) as f:
     sudoku_problems = f.readlines() #List of strings where each string is a sudoku problem of the form '.34..23..etc'
 
@@ -36,7 +36,7 @@ for i in range(len(sudoku_full_problem_list)):
     print(i+1)
     with open(fetch.get_sudoku('sudoku-example-full-test.out'), 'w') as f:
         f.write(sudoku_full_problem_list[i])
-    os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.out >> output.out')
+    os.system('python src/sat.py -p1 -l2 -S1 ./data/sudoku-example-full-test.out >> output.out')
     #os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.out')
 
 #Retrieving the output from the output file
