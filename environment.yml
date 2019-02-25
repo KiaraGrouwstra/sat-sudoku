@@ -3,4 +3,5 @@ dependencies:
   - python=3.7.2=h0371630_0
   - pylint=2.2.2=py37_0
   - pytest=4.2.1=py37_0
-  - numpy=1.16=py37_0
+  - numpy=1.16.1=py37_0
+  - seaborn=0.9.0=py37_0

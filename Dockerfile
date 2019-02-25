@@ -9,7 +9,7 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN . activate base
-RUN conda install pylint pytest
+RUN conda install pylint pytest numpy seaborn
 RUN pylint ./src || true
 RUN pytest
 
