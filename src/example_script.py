@@ -1,8 +1,8 @@
 '''a script to run the example sudokus to verify our algorithm'''
 # Importing the Libraries
 import os
-import fetch
-import sudoku
+from fetch import get_sudoku
+from sudoku import parse_sudoku_lines
 
 # Test Function
 def convert_to_dimacs_string(sudoku_problems_list):
@@ -20,19 +20,19 @@ def convert_to_dimacs_string(sudoku_problems_list):
 def main():
     '''run example sudokus'''
     # Fetching the sudoku problem(s)
-    file_name = fetch.get_sudoku('test_sudoku.out')
+    file_name = get_sudoku('test_sudoku.out')
     with open(file_name) as file:
         # List of strings where each string is a sudoku problem of the form '.34..23..etc'
         sudoku_problems = file.readlines()
 
     # Fetching the rules
-    file_name = fetch.get_sudoku('sudoku-rules.txt')
+    file_name = get_sudoku('sudoku-rules.txt')
     with open(file_name) as file:
         sudoku_rules = file.readlines()
 
     # Converting from the '..32....' format to the dimacs string format '116 0\n 127 0\n...'
     # List of List of Tuples [[(), (), ....]....[(), (), ....]]
-    sudoku_problems = sudoku.parse_sudoku_lines(sudoku_problems)
+    sudoku_problems = parse_sudoku_lines(sudoku_problems)
     sudoku_dimacs_string_list = convert_to_dimacs_string(sudoku_problems)
     rules_str = ''.join(sudoku_rules)
     sudoku_full_problem_list = [rules_str + ''.join(sudoku) for sudoku in sudoku_dimacs_string_list]
@@ -41,7 +41,7 @@ def main():
     open('output.out', 'w').close()
     for (i, sudoku_full_problem) in enumerate(sudoku_full_problem_list):
         print(i+1)
-        with open(fetch.get_sudoku('sudoku-example-full-test.out'), 'w') as file:
+        with open(get_sudoku('sudoku-example-full-test.out'), 'w') as file:
             file.write(sudoku_full_problem)
         os.system('python src/sat.py -p1 -l2 -S1 ./data/sudoku-example-full-test.out >> output.out')
         # os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.out')

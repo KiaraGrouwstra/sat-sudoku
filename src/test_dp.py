@@ -1,9 +1,9 @@
 '''test Davis-Putnam functions'''
 import os
 import tempfile
-from dp import parse_dimacs, read_file, write_dimacs, pick_guess_fact, \
-               simplify, split, Y, N, U, EYE, get_occurrences, State, parse_dimacs_row, add_fact, \
-               pick_guess_fact_random
+from dp import parse_dimacs, read_file, write_dimacs, simplify, split, \
+               Y, N, U, EYE, get_occurrences, State, parse_dimacs_row, add_fact
+from heuristics import pick_guess_fact_random
 
 def test_state():
     '''test'''
@@ -44,10 +44,6 @@ def test_write_dimacs():
     tmp_file = os.path.join(tempfile.gettempdir(), next(tempfile._get_candidate_names()))
     write_dimacs(tmp_file, {123: Y})
     assert read_file(tmp_file) == {0: {123: Y}}
-
-def test_pick_guess_fact():
-    '''test'''
-    assert pick_guess_fact({0:{123:1}}, {N:{}, Y:{123:0}}) == (123, Y)
 
 def test_simplify():
     '''test'''

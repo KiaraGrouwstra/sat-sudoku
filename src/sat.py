@@ -3,7 +3,8 @@
 '''cli program'''
 import argparse
 import logging
-from dp import read_file, solve_csp, pick_guess_fact_random, pick_guess_fact, pick_guess_fact_jw_ts
+from dp import read_file, solve_csp
+from heuristics import pick_guess_fact_random, pick_guess_fact_dlcs, pick_guess_fact_jw_ts
 from sudoku import sudoku_board
 
 def main():
@@ -20,7 +21,11 @@ def main():
 
     args = parser.parse_args()
     fact_printer = sudoku_board if args.printer == 1 else dict
-    guess_fn = {1:pick_guess_fact_random, 2:pick_guess_fact, 3:pick_guess_fact_jw_ts}.get(args.strategy, pick_guess_fact_random)
+    guess_fn = {
+        1:pick_guess_fact_random,
+        2:pick_guess_fact_dlcs,
+        3:pick_guess_fact_jw_ts
+    }.get(args.strategy, pick_guess_fact_random)
 
     lvl = args.loglevel
     loglvl = logging.DEBUG if lvl == 0 \

@@ -6,7 +6,7 @@ a SAT solver using sudokus
 # running locally
 
 # as a command (*nix environment)
-src/SAT -S1 -p1 ./data/sudoku-example-full.txt
+./SAT -S1 -p1 ./data/sudoku-example-full.txt
 # as a Python script (cross-platform)
 python src/sat.py -p1 -S1 ./data/sudoku-example-full.txt
 
@@ -22,7 +22,7 @@ docker run -v ~/Desktop:/data sat -S1 -p1 /data/sudoku-example-full.txt
 # dev
 
 # install python deps thru conda
-conda install pylint pytest
+conda install pylint pytest numpy
 # run unit tests (also happens when building Docker image)
 pytest
 ```
