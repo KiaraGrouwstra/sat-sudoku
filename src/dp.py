@@ -110,18 +110,18 @@ def write_dimacs(path, facts, ser_fn=str):
     with open(path, 'w') as file:
         file.write(strn)
 
-def pick_guess_fact(rules):
+def pick_guess_fact(rules, _occurrences):
     '''pick a fact to guess. presume all known facts are pruned, so only tally facts in rules.'''
     relevances = defaultdict(lambda: 0, {})
     for ors in rules.values():
         for key in ors:
             relevances[key] += 1
-    return max(relevances)
+    return (max(relevances), Y)
 
 def pick_guess_fact_random(_rules, occurrences):
     '''Picks an unassigned variable at random'''
     available_keys = list(occurrences[Y].keys())
-    return random.choice(available_keys)
+    return (random.choice(available_keys), Y)
 
 def pick_guess_fact_jw_ts(rules, occurrences):
     '''Picks decision variable based on the Jeroslow-Wang Two Sided Heuristic'''
@@ -195,19 +195,10 @@ def simplify(state):
     sat = U if state.rules else Y
     return (sat, state)
 
-def split(state_, facts_printer, fact_printer, heuristic):
+def split(state_, facts_printer, fact_printer, guess_fn):
     '''guess a fact to proceed after simplify fails.'''
     state = pickle.loads(pickle.dumps(state_, -1))
-
-    if heuristic == 1:
-        guess_fact = pick_guess_fact_random(state.rules, state.occurrences)
-        guess_value = Y
-    elif heuristic == 2:
-        guess_fact = pick_guess_fact(state.rules)
-        guess_value = Y
-    elif heuristic == 3:
-        guess_fact, guess_value = pick_guess_fact_jw_ts(state.rules, state.occurrences)
-
+    guess_fact, guess_value = guess_fn(state.rules, state.occurrences)
     print_fact = fact_printer(guess_fact)
     guess_value = Y  # TODO: maybe also guess false?
     logging.info('guess     %d: %d', print_fact, guess_value)
@@ -216,7 +207,7 @@ def split(state_, facts_printer, fact_printer, heuristic):
     if sat != N:
         (sat, state) = simplify(state)
         if sat == U:
-            (sat, state) = split(state, facts_printer, fact_printer, heuristic)
+            (sat, state) = split(state, facts_printer, fact_printer, guess_fn)
     if sat == N:
         # clash detected, backtrack
         corrected = -guess_value  # opposite of guess
@@ -228,7 +219,7 @@ def split(state_, facts_printer, fact_printer, heuristic):
         logging.debug(facts_printer(state.facts))
         (sat, state) = simplify(state_)
         if sat == U:
-            (sat, state) = split(state, facts_printer, fact_printer, heuristic)
+            (sat, state) = split(state, facts_printer, fact_printer, guess_fn)
     return (sat, state)
 
 def get_occurrences(rules, belief):
@@ -243,7 +234,7 @@ def get_occurrences(rules, belief):
                 belief_occurrences[key] = idx_set
     return dict(belief_occurrences)
 
-def solve_csp(rules, out_file, heuristic=1, fact_printer=dict):
+def solve_csp(rules, out_file, guess_fn, fact_printer=dict):
     '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
     start = time.time()
 
@@ -259,7 +250,7 @@ def solve_csp(rules, out_file, heuristic=1, fact_printer=dict):
 
         logging.debug('split to answer')
         if sat == U:
-            (sat, state) = split(state, fact_printer, EYE, heuristic)
+            (sat, state) = split(state, fact_printer, EYE, guess_fn)
         assert sat != N
     except AssertionError:
         pass

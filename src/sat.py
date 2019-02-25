@@ -3,7 +3,7 @@
 '''cli program'''
 import argparse
 import logging
-from dp import read_file, solve_csp
+from dp import read_file, solve_csp, pick_guess_fact_random, pick_guess_fact, pick_guess_fact_jw_ts
 from sudoku import sudoku_board
 
 def main():
@@ -19,8 +19,8 @@ def main():
                         help='the input file is the concatenation of all required input clauses.')
 
     args = parser.parse_args()
-    #assert args.strategy == 1  # TODO: implement strategy cli handling
     fact_printer = sudoku_board if args.printer == 1 else dict
+    guess_fn = {1:pick_guess_fact_random, 2:pick_guess_fact, 3:pick_guess_fact_jw_ts}.get(args.strategy, pick_guess_fact_random)
 
     lvl = args.loglevel
     loglvl = logging.DEBUG if lvl == 0 \
@@ -29,13 +29,12 @@ def main():
         else logging.INFO
     logging.getLogger().setLevel(loglvl)
 
-    heuristic = args.strategy
     for inputfile in args.inputfiles:
         logging.debug(inputfile)
         clauses = read_file(inputfile)
         logging.debug(clauses)
         out_file = inputfile + '.out'
-        logging.error(solve_csp(clauses, out_file, fact_printer))
+        logging.error(solve_csp(clauses, out_file, guess_fn, fact_printer))
 
 if __name__ == "__main__":
     main()
