@@ -1,9 +1,7 @@
 '''stuff specific to our sudoku representation'''
 from dp import solve_csp, Y, U
 
-# TODO: replace fact representation with a set, as that would work across problem types.
-# complication: this means 123 and -123 are stored separately and we don't check for clashes here.
-# instead remove variable instance from all rules, regarding empty clauses as clashes.
+# TODO: replace fact representation with a set? store 123/-123 separately.
 
 def parse_sudoku_line(sudoku):
     '''parse a line like 234.23.43.2 to a list of clauses'''
