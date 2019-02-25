@@ -213,10 +213,10 @@ def solve_csp(rules, out_file, guess_fn, fact_printer=dict):
         assert sat != N
     except AssertionError:
         pass
-    logging.warning('took %f seconds', time.time() - start)
+    secs = time.time() - start
     logging.debug('final solution')
-    logging.warning(fact_printer(state.facts))
 
     # output DIMACS file 'filename.out' with truth assignments
     write_dimacs(out_file, state.facts)
-    return sat == Y
+    solved = sat == Y
+    return (solved, state, secs, splits, backtracks, unit_applied, pure_applied)
