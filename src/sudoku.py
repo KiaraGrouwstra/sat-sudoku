@@ -16,10 +16,6 @@ def parse_sudoku_line(sudoku):
             clauses.append(tpl)
     return clauses
 
-def parse_sudoku_lines(lines):
-    '''parse sudoku lines like 3432.23.4322'''
-    return list(map(parse_sudoku_line, lines))
-
 def sudoku_board(facts):
     '''return a human-friendly 2D sudoku representation. works only after it's solved!
         find the most likely number for each tile, and convert back from index to digit (+1).'''
