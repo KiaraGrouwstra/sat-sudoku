@@ -5,9 +5,10 @@ import numpy as np
 from dp import Y, N
 
 def pick_guess_fact_random(_rules, occurrences):
-    '''Picks an unassigned variable at random'''
-    available_keys = list(occurrences[Y].keys())
-    return (random.choice(available_keys), Y)
+    '''Picks an unassigned variable at random.
+    presume pure literals are pruned, so keys in Y and N are identical.'''
+    keys = list(occurrences[Y].keys())
+    return (random.choice(keys), Y)
 
 def pick_guess_fact_dlcs(rules, _occurrences):
     '''Dynamic Largest Combined Sum heuristic.
