@@ -1,13 +1,32 @@
 '''test Davis-Putnam functions'''
 import os
 import tempfile
-from dp import parse_dimacs, read_file, write_dimacs, pick_guess_fact, simplify_initial, \
-               simplify, split, Y, N, U, EYE, get_occurrences, State, parse_dimacs_row
+from dp import parse_dimacs, read_file, write_dimacs, pick_guess_fact, \
+               simplify, split, Y, N, U, EYE, get_occurrences, State, parse_dimacs_row, add_fact
+
+def test_state():
+    '''test'''
+    state = State({0:{111:Y}, 1:{111:N, 222:Y}})
+    assert state.rules == {0:{111:Y}, 1:{111:N, 222:Y}}
+    assert state.facts == {}
+    assert state.occurrences == {1: {111: {0}, 222: {1}}, -1: {111: {1}}}
+    assert state.due_pure == {222}
+    assert state.due_unit == {0}
+
+def test_add_fact():
+    '''test'''
+    state = State({0:{111:Y}, 1:{111:N, 222:Y}})
+    (sat, state) = add_fact(state, 111, Y)
+    assert state.rules == {1: {222: Y}}
+    assert state.facts == {111: Y}
+    assert state.occurrences == {Y: {222: {1}}, N: {}}
+    assert state.due_pure == {222}
+    assert state.due_unit == {0, 1}
 
 def test_parse_dimacs_row():
     '''test'''
     assert parse_dimacs_row('123 -456 0') == {123:Y, 456:N}
-    assert parse_dimacs_row('123 -123 0') == None
+    assert parse_dimacs_row('123 -123 0') is None
 
 def test_parse_dimacs():
     '''test'''
@@ -28,34 +47,24 @@ def test_pick_guess_fact():
     '''test'''
     assert pick_guess_fact({0:{123:1}}) == 123
 
-def test_simplify_initial():
-    '''test'''
-    rules = {0:{111:Y}}
-    facts = {111:Y, 222:U}
-    state = State(rules, facts)
-    assert simplify_initial(state)[1].rules == {}
-
 def test_simplify():
     '''test'''
-    rules = {0:{0:Y, 1:Y}}
-    facts = {0:Y, 1:U}
-    state = State(rules, facts)
+    rules = {0:{0:Y, 1:Y}, 1:{0:Y}}
+    state = State(rules)
     assert simplify(state)[0] == Y
-    rules = {0:{0:N, 1:N}}
-    facts = {0:Y, 1:Y}
-    state = State(rules, facts)
+    rules = {0:{0:N, 1:N}, 1:{0:Y}, 2:{1:Y}}
+    state = State(rules)
     assert simplify(state)[0] == N
-    rules = {0:{0:Y, 1:Y}}
-    facts = {0:U, 1:U}
-    state = State(rules, facts)
+    rules = {0:{0:Y, 1:Y}, 1:{0:N, 1:N}}
+    state = State(rules)
     assert simplify(state)[0] == U
 
 def test_split():
     '''test'''
-    rules = {0:{0:N, 1:N}}
-    facts = {0:U, 1:U}
-    state = State(rules, facts)
-    assert split(state, EYE, EYE)[0] == Y
+    state = State({0:{0:Y, 1:Y}, 1:{0:N, 1:N}})
+    (sat, state) = simplify(state)
+    (sat, state) = split(state, EYE, EYE)
+    assert sat == Y
 
 def test_get_occurrences():
     '''test'''
