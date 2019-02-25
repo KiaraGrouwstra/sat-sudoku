@@ -13,8 +13,10 @@ python src/sat.py -p -l2 -S2 ./data/sudoku-example-full.txt
 
 # running by docker
 
-# build docker image
-docker build -t sat .
+# build docker image, use backslashes on Windows
+# split due to big deps :(
+docker build -t sudoku-base -f ./docker/base/Dockerfile .
+docker build -t sat -f ./docker/top/Dockerfile .
 # test image on sample file, using strategy 1, printer 1 (sudoku board)
 docker run sat -S1 -p
 # run on local file on our Desktop, mounting to /data, and passing it the file

@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM frolvlad/alpine-miniconda3
+FROM sudoku-base
 
 # Set the working directory to /app
 WORKDIR /app
@@ -9,7 +9,6 @@ COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN . activate base
-RUN conda install pylint pytest numpy seaborn
 RUN pylint ./src || true
 RUN pytest
 
