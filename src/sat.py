@@ -35,7 +35,7 @@ def main():
         clauses = read_file(inputfile)
         logging.debug(clauses)
         out_file = inputfile + '.out'
-        print(solve_csp(clauses, out_file, heuristic, fact_printer))
+        logging.error(solve_csp(clauses, out_file, fact_printer))
 
 if __name__ == "__main__":
     main()
