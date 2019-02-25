@@ -123,7 +123,12 @@ def simplify(state):
             # pure literal rule: regard occurrences as true if they all agree
             belief = Y if state.occurrences[Y].get(var, set()) else N
             if (Y if state.occurrences[N].get(var, set()) else N) != belief:
-                pure_applied = pure_applied + 1
+
+                try:
+                    pure_applied += 1
+                except NameError:
+                    pure_applied = 1
+
                 (sat, state) = add_fact(state, var, belief)
                 if sat == N:
                     return (sat, state)
@@ -139,7 +144,12 @@ def simplify(state):
                 rule = state.rules[line]
                 if rule:
                     [(var, belief)] = list(rule.items())
-                    unit_applied = unit_applied + 1
+
+                    try:
+                        unit_applied += 1
+                    except NameError:
+                        unit_applied = 1
+
                     (sat, state) = add_fact(state, var, belief)
                     if sat == N:
                         return (sat, state)
@@ -153,7 +163,12 @@ def split(state_, facts_printer, fact_printer, guess_fn):
     state = pickle.loads(pickle.dumps(state_, -1))
     guess_fact, guess_value = guess_fn(state.rules, state.occurrences)
     print_fact = fact_printer(guess_fact)
-    splits += 1
+
+    try:
+        splits += 1
+    except NameError:
+        splits = 1
+
     logging.info('guess     %d: %d', print_fact, guess_value)
     logging.debug(facts_printer(state.facts))
     (sat, state) = add_fact(state, guess_fact, guess_value)
@@ -168,7 +183,12 @@ def split(state_, facts_printer, fact_printer, guess_fn):
         if sat == N:
             return (sat, state)
         # TODO: backtrack to assumption of clashing fact?
-        backtracks += 1
+
+        try:
+            backtracks += 1
+        except NameError:
+            backtracks = 1
+
         logging.info('backtrack %d: %d', print_fact, corrected)
         logging.debug(facts_printer(state.facts))
         (sat, state) = simplify(state_)
