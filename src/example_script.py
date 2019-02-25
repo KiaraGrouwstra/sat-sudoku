@@ -43,8 +43,8 @@ def main():
         print(i+1)
         with open(get_sudoku('sudoku-example-full-test.out'), 'w') as file:
             file.write(sudoku_full_problem)
-        os.system('python src/sat.py -p1 -l2 -S1 ./data/sudoku-example-full-test.out >> output.out')
-        # os.system('python src/sat.py -p1 -S1 ./data/sudoku-example-full-test.out')
+        os.system('python src/sat.py -p -l2 -S1 ./data/sudoku-example-full-test.out >> output.out')
+        # os.system('python src/sat.py -p -S1 ./data/sudoku-example-full-test.out')
 
     # Retrieving the output from the output file
     with open(os.path.join(os.getcwd(), 'output.out')) as file:
