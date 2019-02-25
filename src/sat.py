@@ -15,7 +15,9 @@ class Algorithm(Enum):
     JW_TS = 3
     # BOHM = 4
 
-def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=logging.INFO, fancy_beliefs=False, output_file='./data/metrics.csv'):
+def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=logging.INFO,
+                 fancy_beliefs=False, output_file='./data/metrics.csv'):
+    '''run on some files and log results to csv'''
     logging.getLogger().setLevel(loglvl)
 
     guess_fn = {
