@@ -6,14 +6,14 @@ import logging
 from enum import Enum
 import pandas as pd
 from dp import read_file, solve_csp
-from heuristics import guess_random, guess_dlcs, guess_jw_ts
+from heuristics import guess_random, guess_dlcs, guess_jw_ts, guess_bohm
 from sudoku import sudoku_board
 
 class Algorithm(Enum):
     RANDOM = 1
     DLCS = 2
     JW_TS = 3
-    # BOHM = 4
+    BOHM = 4
 
 def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=logging.INFO,
                  fancy_beliefs=False, output_file='./data/metrics.csv'):
@@ -23,7 +23,8 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
     guess_fn = {
         Algorithm.RANDOM: guess_random,
         Algorithm.DLCS: guess_dlcs,
-        Algorithm.JW_TS: guess_jw_ts
+        Algorithm.JW_TS: guess_jw_ts,
+        Algorithm.BOHM: guess_bohm,
     }[alg]
 
     res = []
