@@ -3,7 +3,7 @@ import os
 import tempfile
 from dp import parse_dimacs, read_file, write_dimacs, simplify, split, \
                Y, N, U, EYE, get_occurrences, State, parse_dimacs_row, add_fact
-from heuristics import pick_guess_fact_random
+from heuristics import guess_random
 
 def test_state():
     '''test'''
@@ -61,7 +61,7 @@ def test_split():
     '''test'''
     state = State({0:{0:Y, 1:Y}, 1:{0:N, 1:N}})
     (sat, state) = simplify(state)
-    (sat, state) = split(state, EYE, EYE, pick_guess_fact_random)
+    (sat, state) = split(state, EYE, EYE, guess_random)
     assert sat == Y
 
 def test_get_occurrences():

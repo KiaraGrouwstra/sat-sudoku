@@ -6,7 +6,7 @@ import logging
 from enum import Enum
 import pandas as pd
 from dp import read_file, solve_csp
-from heuristics import pick_guess_fact_random, pick_guess_fact_dlcs, pick_guess_fact_jw_ts
+from heuristics import guess_random, guess_dlcs, guess_jw_ts
 from sudoku import sudoku_board
 
 class Algorithm(Enum):
@@ -21,9 +21,9 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
     logging.getLogger().setLevel(loglvl)
 
     guess_fn = {
-        Algorithm.RANDOM: pick_guess_fact_random,
-        Algorithm.DLCS: pick_guess_fact_dlcs,
-        Algorithm.JW_TS: pick_guess_fact_jw_ts
+        Algorithm.RANDOM: guess_random,
+        Algorithm.DLCS: guess_dlcs,
+        Algorithm.JW_TS: guess_jw_ts
     }[alg]
 
     res = []
