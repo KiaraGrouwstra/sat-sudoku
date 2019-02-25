@@ -2,7 +2,8 @@
 import os
 import tempfile
 from dp import parse_dimacs, read_file, write_dimacs, pick_guess_fact, \
-               simplify, split, Y, N, U, EYE, get_occurrences, State, parse_dimacs_row, add_fact
+               simplify, split, Y, N, U, EYE, get_occurrences, State, parse_dimacs_row, add_fact, \
+               pick_guess_fact_random
 
 def test_state():
     '''test'''
@@ -46,7 +47,7 @@ def test_write_dimacs():
 
 def test_pick_guess_fact():
     '''test'''
-    assert pick_guess_fact({0:{123:1}}) == 123
+    assert pick_guess_fact({0:{123:1}}, {N:{}, Y:{123:0}}) == (123, Y)
 
 def test_simplify():
     '''test'''
@@ -64,7 +65,7 @@ def test_split():
     '''test'''
     state = State({0:{0:Y, 1:Y}, 1:{0:N, 1:N}})
     (sat, state) = simplify(state)
-    (sat, state) = split(state, EYE, EYE)
+    (sat, state) = split(state, EYE, EYE, pick_guess_fact_random)
     assert sat == Y
 
 def test_get_occurrences():
