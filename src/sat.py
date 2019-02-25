@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 '''cli program'''
+import os
 import argparse
 import logging
 from enum import Enum
@@ -16,7 +17,8 @@ class Algorithm(Enum):
     BOHM = 4
 
 def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=logging.INFO,
-                 fancy_beliefs=False, output_file='./data/metrics.csv'):
+                 fancy_beliefs=False,
+                 output_file=os.path.join(os.getcwd(), 'data', 'metrics.csv')):
     '''run on some files and log results to csv'''
     logging.getLogger().setLevel(loglvl)
 
@@ -53,7 +55,11 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
             # '': ,
         })
     df = pd.DataFrame(res)
-    df.to_csv(path_or_buf=output_file)
+    if os.path.isfile(path):
+        df.to_csv(path_or_buf=output_file, header=False, mode='a')
+    else:
+        df.to_csv(path_or_buf=output_file, header=True, mode='w')
+    return df
 
 def main():
     '''take cli flags and solve SAT problem'''
@@ -64,7 +70,7 @@ def main():
                         help='0 for debug, 1 for info (default), 2 for warn, 3 for error')
     parser.add_argument('-p', '--printer', default=False, action='store_true',
                         help='print solution as sudoku instead of dict')
-    parser.add_argument('inputfiles', nargs='*', default=['./data/sudoku-example-full.txt'],
+    parser.add_argument('inputfiles', nargs='*', default=[os.path.join(os.getcwd(), 'data', 'dimacs', 'sudoku-example-full.txt')],
                         help='the input file is the concatenation of all required input clauses.')
     parser.add_argument('-b', '--beliefs', default=False, action='store_true', help='fancy beliefs for our experiment')
 
