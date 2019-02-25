@@ -17,6 +17,7 @@ def test_add_fact():
     '''test'''
     state = State({0:{111:Y}, 1:{111:N, 222:Y}})
     (sat, state) = add_fact(state, 111, Y)
+    assert sat == Y
     assert state.rules == {1: {222: Y}}
     assert state.facts == {111: Y}
     assert state.occurrences == {Y: {222: {1}}, N: {}}

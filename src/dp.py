@@ -90,8 +90,8 @@ def parse_dimacs(dimacs_file_contents):
     '''parse a dimacs file to rules (dict of dicts), cleaning out tautologies'''
     clause_dict = {}
     rows = list(filter(lambda s: s[0] not in ['c', 'p', 'd'], dimacs_file_contents))
-    for i in range(len(rows)):
-        clause = parse_dimacs_row(rows[i])
+    for (i, row) in enumerate(rows):
+        clause = parse_dimacs_row(row)
         # skip tautologies
         if clause:
             clause_dict[i] = clause
@@ -117,12 +117,12 @@ def pick_guess_fact(rules):
             relevances[key] += 1
     return max(relevances)
 
-def pick_guess_fact_random(rules, occurrences):
+def pick_guess_fact_random(_rules, occurrences):
     '''Picks an unassigned variable at random'''
     available_keys = list(occurrences[Y].keys())
-    return(random.choice(available_keys))
+    return random.choice(available_keys)
 
-def pick_guess_fact_bohm(rules, occurrences, alpha = 1, beta = 2):
+def pick_guess_fact_bohm(rules, occurrences, alpha=1, beta=2):
     '''Picks an unassigned variable based on the BOHM heuristic'''
     bohm = {}
     counts = {}
@@ -132,9 +132,12 @@ def pick_guess_fact_bohm(rules, occurrences, alpha = 1, beta = 2):
         bohm[available_key], counts[available_key] = {}, {}
         for clause_size in range(max_clause_size):
             counts[available_key][clause_size] = {}
-            positive_count = len([1 for clause_index in occurrences[Y][available_key] if len(rules[clause_index]) == clause_size + 1])
-            negative_count = len([1 for clause_index in occurrences[N][available_key] if len(rules[clause_index]) == clause_size + 1])
-            bohm[available_key][clause_size] = alpha * max(positive_count, negative_count) + beta * min(positive_count, negative_count)
+            positive_count = len([1 for clause_index in occurrences[Y][available_key]
+                                  if len(rules[clause_index]) == clause_size + 1])
+            negative_count = len([1 for clause_index in occurrences[N][available_key]
+                                  if len(rules[clause_index]) == clause_size + 1])
+            right = beta * min(positive_count, negative_count)
+            bohm[available_key][clause_size] = alpha * max(positive_count, negative_count) + right
             counts[available_key][clause_size][Y] = positive_count
             counts[available_key][clause_size][N] = negative_count
     for clause_size in range(max_clause_size):
@@ -145,8 +148,7 @@ def pick_guess_fact_bohm(rules, occurrences, alpha = 1, beta = 2):
             max_key = available_keys[heuristics.index(max(heuristics))]
             if counts[max_key][clause_size][Y] >= counts[max_key][clause_size][N]:
                 return max_key, Y
-            else:
-                return max_key, N
+            return max_key, N
 
 def simplify(state):
     '''apply pure / unit clause rules until stuck.
@@ -191,7 +193,7 @@ def split(state_, facts_printer, fact_printer):
     guess_fact = pick_guess_fact(state.rules)
     print_fact = fact_printer(guess_fact)
     guess_value = Y  # TODO: maybe also guess false?
-    logging.info('guess     %d: %d' % (print_fact, guess_value))
+    logging.info('guess     %d: %d', print_fact, guess_value)
     logging.debug(facts_printer(state.facts))
     (sat, state) = add_fact(state, guess_fact, guess_value)
     if sat != N:
@@ -205,7 +207,7 @@ def split(state_, facts_printer, fact_printer):
         if sat == N:
             return (sat, state)
         # TODO: backtrack to assumption of clashing fact?
-        logging.info('backtrack %d: %d' % (print_fact, corrected))
+        logging.info('backtrack %d: %d', print_fact, corrected)
         logging.debug(facts_printer(state.facts))
         (sat, state) = simplify(state_)
         if sat == U:
@@ -244,7 +246,7 @@ def solve_csp(rules, out_file, fact_printer=dict):
         assert sat != N
     except AssertionError:
         pass
-    logging.warning('took %f seconds' % (time.time() - start))
+    logging.warning('took %f seconds', time.time() - start)
     logging.debug('final solution')
     logging.warning(fact_printer(state.facts))
 
