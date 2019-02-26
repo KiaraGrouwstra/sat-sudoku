@@ -34,10 +34,11 @@ def main():
         for sudoku_problem in sudoku_problems:
             # convert from '..32....' to DIMACS '116 0\n 127 0\n...'
             # List of Tuples [(), (), ....]....[(), (), ....]
-            sudoku = parse_sudoku_line(sudoku_problem)
+            sudoku_trimmed = sudoku_problem.strip()
+            sudoku = parse_sudoku_line(sudoku_trimmed)
             sudoku_dimacs = [key + ' 0\n' for (key, _) in sudoku]
             sudoku_full = rules_str + ''.join(sudoku_dimacs)
-            fpath = os.path.join(directory, f'sudoku-{sudoku_problem}-dimacs.in')
+            fpath = os.path.join(directory, f'sudoku-{sudoku_trimmed}-dimacs.in')
             with open(fpath, 'w') as file:
                 file.write(sudoku_full)
 
