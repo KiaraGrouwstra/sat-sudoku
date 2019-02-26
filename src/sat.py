@@ -7,14 +7,23 @@ import logging
 from enum import Enum
 import pandas as pd
 from dp import read_file, solve_csp
-from heuristics import guess_random, guess_dlcs, guess_jw_ts, guess_bohm
+from heuristics import guess_random, guess_dlcs, guess_dscs, guess_dlis, guess_jw_1s, \
+                       guess_jw_2s, guess_jw_ts, guess_mom, guess_fom, guess_bohm_, \
+                       guess_bohm
 from sudoku import sudoku_board
 
 class Algorithm(Enum):
     RANDOM = 1
     DLCS = 2
-    JW_TS = 3
-    BOHM = 4
+    DSCS = 3
+    DLIS = 4
+    JW_1S = 5
+    JW_2S = 6
+    JW_TS = 7
+    MOM = 8
+    FOM = 9
+    BOHM_ = 10
+    BOHM = 11
 
 def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=logging.INFO,
                  fancy_beliefs=False,
@@ -25,7 +34,14 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
     guess_fn = {
         Algorithm.RANDOM: guess_random,
         Algorithm.DLCS: guess_dlcs,
+        Algorithm.DSCS: guess_dscs,
+        Algorithm.DLIS: guess_dlis,
+        Algorithm.JW_1S: guess_jw_1s,
+        Algorithm.JW_2S: guess_jw_2s,
         Algorithm.JW_TS: guess_jw_ts,
+        Algorithm.MOM: guess_mom,
+        Algorithm.FOM: guess_fom,
+        Algorithm.BOHM_: guess_bohm_,
         Algorithm.BOHM: guess_bohm,
     }[alg]
 
@@ -36,8 +52,9 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
         givens = len(list(filter(lambda x: len(x) == 1, clauses.values())))
         logging.debug(clauses)
         out_file = inputfile + '.out'
-        (solved, state, secs, splits, backtracks, unit_applied, pure_applied) = solve_csp(clauses, out_file, guess_fn, fact_printer)
-        logging.error('%s, took %d splits, %d backtracks, %f seconds, %d unit applied, %d pure applied', solved, splits, backtracks, secs, unit_applied, pure_applied)
+        (solved, state, secs, splits, backtracks, unit_applied, pure_applied) = solve_csp(clauses, out_file, guess_fn, fact_printer, fancy_beliefs)
+        logging.error(inputfile)
+        logging.error('%s, %f secs, %d splits, %d backtracks', solved, secs, splits, backtracks)
         logging.warning(fact_printer(state.facts))
         res.append({
             'inputfile': inputfile,
@@ -55,7 +72,7 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
             # '': ,
         })
     df = pd.DataFrame(res)
-    if os.path.isfile(path):
+    if os.path.isfile(output_file):
         df.to_csv(path_or_buf=output_file, header=False, mode='a')
     else:
         df.to_csv(path_or_buf=output_file, header=True, mode='w')

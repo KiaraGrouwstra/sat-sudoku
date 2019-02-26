@@ -157,7 +157,7 @@ def simplify(state):
     sat = U if state.rules else Y
     return (sat, state)
 
-def split(state_, facts_printer, fact_printer, guess_fn):
+def split(state_, facts_printer, fact_printer, guess_fn, fancy_beliefs=False):
     '''guess a fact to proceed after simplify fails.'''
     global splits, backtracks
     state = pickle.loads(pickle.dumps(state_, -1))
@@ -171,11 +171,14 @@ def split(state_, facts_printer, fact_printer, guess_fn):
 
     logging.info('guess     %d: %d', print_fact, guess_value)
     logging.debug(facts_printer(state.facts))
+    if fancy_beliefs:
+        guess_value = Y
+        # guess_value = -guess_value
     (sat, state) = add_fact(state, guess_fact, guess_value)
     if sat != N:
         (sat, state) = simplify(state)
         if sat == U:
-            (sat, state) = split(state, facts_printer, fact_printer, guess_fn)
+            (sat, state) = split(state, facts_printer, fact_printer, guess_fn, fancy_beliefs)
     if sat == N:
         # clash detected, backtrack
         corrected = -guess_value  # opposite of guess
@@ -193,7 +196,7 @@ def split(state_, facts_printer, fact_printer, guess_fn):
         logging.debug(facts_printer(state.facts))
         (sat, state) = simplify(state_)
         if sat == U:
-            (sat, state) = split(state, facts_printer, fact_printer, guess_fn)
+            (sat, state) = split(state, facts_printer, fact_printer, guess_fn, fancy_beliefs)
     return (sat, state)
 
 def get_occurrences(rules, belief):
@@ -208,7 +211,7 @@ def get_occurrences(rules, belief):
                 belief_occurrences[key] = idx_set
     return dict(belief_occurrences)
 
-def solve_csp(rules, out_file, guess_fn, fact_printer=dict):
+def solve_csp(rules, out_file, guess_fn, fact_printer=dict, fancy_beliefs=False):
     '''solve a general CSP problem and write its solution to a file. returns satisfiability.'''
     start = time.time()
     global splits, backtracks, unit_applied, pure_applied
@@ -229,14 +232,15 @@ def solve_csp(rules, out_file, guess_fn, fact_printer=dict):
 
         logging.debug('split to answer')
         if sat == U:
-            (sat, state) = split(state, fact_printer, EYE, guess_fn)
+            (sat, state) = split(state, fact_printer, EYE, guess_fn, fancy_beliefs)
         assert sat != N
     except AssertionError:
         pass
     secs = time.time() - start
     logging.debug('final solution')
 
-    # output DIMACS file 'filename.out' with truth assignments
-    write_dimacs(out_file, state.facts)
+    # output DIMACS file 'filename.out' with truth assignments, empty if unsolved
+    content = state.facts if sat else {}
+    write_dimacs(out_file, content)
     solved = sat == Y
     return (solved, state, secs, splits, backtracks, unit_applied, pure_applied)
