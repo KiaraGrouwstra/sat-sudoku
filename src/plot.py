@@ -11,14 +11,24 @@ df = df[df['splits'] != 0]
 df['type'] = df['inputfile'].map(lambda s: s.split(os.path.sep)[-2])
 df = df[df['type'] != 'dimacs']
 df['smart_ratio'] = df.apply(lambda x: 1 - x['backtracks'] / x['splits'], axis=1)
+# df['split_to_backtrack'] = df.apply(lambda x: x['splits'] / x['backtracks'])
 
 def check_significance(df):
     a = df[df.fancy_beliefs == False]
     b = df[df.fancy_beliefs]
-    stat, p = mannwhitneyu(a['smart_ratio'], b['smart_ratio'], alternative='less')
+    stat, p = mannwhitneyu(a[metric], b[metric], alternative=kind)
     return p
 
-df.groupby(['alg']).apply(check_significance)
+metrics = {
+    'smart_ratio': 'less',
+    # 'split_to_backtrack': 'less',
+    'splits': 'greater',
+    'backtracks': 'greater',
+    'secs': 'greater',
+}
+for metric, kind in metrics.items():
+    print(metric)
+    print(df.groupby(['alg']).apply(check_significance))
 
 # 'categorical':
 # 'alg',
@@ -43,7 +53,7 @@ metrics = {
     # 'assigned': 'number of assigned variables (higher is better)',
     'backtracks': 'number of backtracks (lower is better)',  # algorithm quality (more so than splits), problem difficulty
     'splits': 'number of splits (lower is better)',  # algorithm quality, problem difficulty (more so than backtracks)
-    'smart_ratio': '1 - backtracks / splits: ratio of decisions that lead to a solution',  # algorithm quality
+    # 'smart_ratio': '1 - backtracks / splits: ratio of decisions that lead to a solution',  # algorithm quality
     'secs': 'seconds taken to solution (lower is better)',  # machine/implementation quality, algorithm quality, problem difficulty
     'pure_applied': 'number of times the pure literal rule was used',
     'unit_applied': 'number of times the unit clause rule was used',
@@ -51,9 +61,9 @@ metrics = {
 
 sns.set_palette('pastel')
 for metric, title in metrics.items():
-    print(metric)
-    # log_metric = f'log_{metric}'
-    # df[log_metric] = df[metric].map(np.log10)
+    # print(metric)
+    log_metric = f'log_{metric}'
+    df[log_metric] = df[metric].map(np.log10)
 
     # for plot_type in plot_types:
     #     print(plot_type)
@@ -61,8 +71,8 @@ for metric, title in metrics.items():
     plot = sns.catplot(
         # hue='fancy_beliefs',
         x='alg',
-        # y=log_metric,
-        y=metric,
+        # y=metric,
+        y=log_metric,
         # row='type',
         col='fancy_beliefs',
         # col_wrap=4,
@@ -70,7 +80,7 @@ for metric, title in metrics.items():
         # kind=plot_type,
     )
     plt.subplots_adjust(top=0.8)
-    # title = f'log10 {title}'
+    title = f'log10 {title}'
     plt.suptitle(title, fontsize=28)
 
     fig_name = f'{metric}.png'
