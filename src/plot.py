@@ -12,6 +12,7 @@ df['type'] = df['inputfile'].map(lambda s: s.split(os.path.sep)[-2])
 df = df[df['type'] != 'dimacs']
 df['smart_ratio'] = df.apply(lambda x: 1 - x['backtracks'] / x['splits'], axis=1)
 # df['split_to_backtrack'] = df.apply(lambda x: x['splits'] / x['backtracks'])
+df = df[df['alg'].map(lambda x: x not in ['DSCS', 'FOM', 'BOHM'])]  # ditch joke heuristics + Bohm
 
 def check_significance(df):
     a = df[df.fancy_beliefs == False]
