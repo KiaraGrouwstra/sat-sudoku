@@ -19,13 +19,14 @@ class Algorithm(Enum):
     DLIS = 4
     JW_1S = 5
     JW_2S = 6
-    JW_TS = 7
+    # JW_TS = 7
     MOM = 8
     FOM = 9
-    BOHM_ = 10
+    # BOHM_ = 10
     BOHM = 11
 
-def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=logging.INFO,
+def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
+                 # =Algorithm.RANDOM
                  fancy_beliefs=False,
                  output_file=os.path.join(os.getcwd(), 'data', 'metrics.csv')):
     '''run on some files and log results to csv'''
@@ -38,10 +39,10 @@ def monitor_runs(inputfiles, alg=Algorithm.RANDOM, fact_printer=dict, loglvl=log
         Algorithm.DLIS: guess_dlis,
         Algorithm.JW_1S: guess_jw_1s,
         Algorithm.JW_2S: guess_jw_2s,
-        Algorithm.JW_TS: guess_jw_ts,
+        # Algorithm.JW_TS: guess_jw_ts,
         Algorithm.MOM: guess_mom,
         Algorithm.FOM: guess_fom,
-        Algorithm.BOHM_: guess_bohm_,
+        # Algorithm.BOHM_: guess_bohm_,
         Algorithm.BOHM: guess_bohm,
     }[alg]
 

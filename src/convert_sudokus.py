@@ -8,17 +8,19 @@ def main():
     '''run example sudokus'''
     data_path = os.path.join(os.getcwd(), 'data')
     dot_path = os.path.join(data_path, 'dot')
-    dimacs_path = os.path.join(data_path, 'dimacs')
+    dimacs_path = os.path.join(data_path, 'dimacs', 'sudoku')
 
     # Fetching the rules
-    fpath = os.path.join(dimacs_path, 'sudoku-rules.txt')
+    fpath = os.path.join(data_path, 'dimacs', 'sudoku-rules.txt')
     with open(fpath) as file:
         sudoku_rules = file.readlines()
     rules_str = ''.join(sudoku_rules)
 
-    sudoku_paths = glob.glob(os.path.join(dot_path, '*.txt'))
+    # sudoku_paths = glob.glob(os.path.join(dot_path, '*.txt'))
+    sudoku_paths = ['/home/tycho/Downloads/Telegram Desktop/al_escargot.txt']
     for sudoku_path in sudoku_paths:
-        sudoku_type = os.path.basename(sudoku_path).split('.')[0]
+        # sudoku_type = os.path.basename(sudoku_path).split('.')[0]
+        sudoku_type = 'janne'
         print(sudoku_type)
 
         # mkdir
