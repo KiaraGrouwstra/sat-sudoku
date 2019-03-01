@@ -1,7 +1,7 @@
 '''functions to pick a fact to guess.'''
 import random
 from collections import defaultdict
-import numpy as np
+# import numpy as np
 from dp import Y, N
 
 def guess_random(_rules, occurrences):
@@ -85,20 +85,20 @@ def guess_jw_2s(rules, occurrences):
     belief = Y if score[Y][fact] > score[N][fact] else N
     return (fact, belief)
 
-def guess_jw_ts(rules, occurrences):
-    '''Picks decision variable based on the Jeroslow-Wang Two Sided Heuristic'''
-    available_keys = list(occurrences[Y].keys())
-    positive_counts = np.array([sum([2 ** -len(rules[clause_index])
-                                     for clause_index in occurrences[Y][available_key]
-                                     if rules.get(clause_index, N) != N])
-                                for available_key in available_keys])
-    negative_counts = np.array([sum([2 ** -len(rules[clause_index])
-                                     for clause_index in occurrences[N][available_key]
-                                     if rules.get(clause_index, N) != N])
-                                for available_key in available_keys])
-    jw_sum = positive_counts + negative_counts
-    return (available_keys[np.argmax(jw_sum)], Y
-            if positive_counts[np.argmax(jw_sum)] >= negative_counts[np.argmax(jw_sum)] else N)
+# def guess_jw_ts(rules, occurrences):
+#     '''Picks decision variable based on the Jeroslow-Wang Two Sided Heuristic'''
+#     available_keys = list(occurrences[Y].keys())
+#     positive_counts = np.array([sum([2 ** -len(rules[clause_index])
+#                                      for clause_index in occurrences[Y][available_key]
+#                                      if rules.get(clause_index, N) != N])
+#                                 for available_key in available_keys])
+#     negative_counts = np.array([sum([2 ** -len(rules[clause_index])
+#                                      for clause_index in occurrences[N][available_key]
+#                                      if rules.get(clause_index, N) != N])
+#                                 for available_key in available_keys])
+#     jw_sum = positive_counts + negative_counts
+#     return (available_keys[np.argmax(jw_sum)], Y
+#             if positive_counts[np.argmax(jw_sum)] >= negative_counts[np.argmax(jw_sum)] else N)
 
 def guess_mom(rules, occurrences, k=1):
     '''Maximum Occurrences in Clauses of Minimum Size'''

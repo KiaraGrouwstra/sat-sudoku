@@ -2,6 +2,7 @@
 import os
 import glob
 import logging
+import pandas as pd
 from sat import monitor_runs, Algorithm
 
 def main():
@@ -14,7 +15,12 @@ def main():
     ]:
         for alg in Algorithm:
             logging.error(alg.name)
-            monitor_runs(fpaths, alg=alg, loglvl=logging.ERROR, fancy_beliefs=belief)
+            res = monitor_runs(fpaths, alg=alg, loglvl=logging.ERROR, fancy_beliefs=belief)
+            df = pd.DataFrame(res)
+            if os.path.isfile(output_file):
+                df.to_csv(path_or_buf=output_file, header=False, mode='a')
+            else:
+                df.to_csv(path_or_buf=output_file, header=True, mode='w')
 
 if __name__ == "__main__":
     main()

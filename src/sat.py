@@ -5,10 +5,9 @@ import os
 import argparse
 import logging
 from enum import Enum
-import pandas as pd
 from dp import read_file, solve_csp
 from heuristics import guess_random, guess_dlcs, guess_dscs, guess_dlis, guess_jw_1s, \
-                       guess_jw_2s, guess_jw_ts, guess_mom, guess_fom, guess_bohm_, \
+                       guess_jw_2s, guess_mom, guess_fom, guess_bohm_, \
                        guess_bohm
 from sudoku import sudoku_board
 
@@ -72,12 +71,7 @@ def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
             'givens': givens,
             # '': ,
         })
-    df = pd.DataFrame(res)
-    if os.path.isfile(output_file):
-        df.to_csv(path_or_buf=output_file, header=False, mode='a')
-    else:
-        df.to_csv(path_or_buf=output_file, header=True, mode='w')
-    return df
+    return res
 
 def main():
     '''take cli flags and solve SAT problem'''

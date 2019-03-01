@@ -1,4 +1,4 @@
-# Use an official Python runtime as a parent image
+# Use an Alpine Conda image
 FROM frolvlad/alpine-miniconda3
 
 # Install any needed packages

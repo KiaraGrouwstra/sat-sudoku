@@ -1,7 +1,7 @@
 '''test'''
 from dp import Y, N
 from heuristics import guess_random, guess_dlcs, guess_dscs, guess_dlis, guess_jw_1s, \
-                       guess_jw_2s, guess_jw_ts, guess_mom, guess_fom, guess_bohm_, \
+                       guess_jw_2s, guess_mom, guess_fom, guess_bohm_, \
                        guess_bohm
 
 rules = {0:{123:Y,456:Y,789:Y},1:{123:N,456:N},2:{456:N,789:N}}
@@ -32,9 +32,9 @@ def test_guess_jw_2s():
     '''test'''
     assert guess_jw_2s(rules, occurrences) == (789, N)
 
-def test_guess_jw_ts():
-    '''test'''
-    assert guess_jw_ts(rules, occurrences) == (456, N)
+# def test_guess_jw_ts():
+#     '''test'''
+#     assert guess_jw_ts(rules, occurrences) == (456, N)
 
 def test_guess_mom():
     '''test'''
