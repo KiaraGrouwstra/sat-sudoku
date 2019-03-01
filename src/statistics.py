@@ -18,7 +18,7 @@ b = df[df.fancy_beliefs]
 
 metrics = {
     'splits': 'greater',
-    'backtracks': 'greater',
+    'backtracks': 'less',
     'secs': 'greater',
 }
 
