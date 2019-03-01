@@ -17,9 +17,9 @@ class Algorithm(Enum):
     DLCS = 2
     DSCS = 3
     DLIS = 4
-    JW_1S = 5
-    JW_2S = 6
-    # JW_TS = 7
+    JW1S = 5
+    JW2S = 6
+    # JWTS = 7
     MOM = 8
     FOM = 9
     # BOHM_ = 10
@@ -37,9 +37,9 @@ def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
         Algorithm.DLCS: guess_dlcs,
         Algorithm.DSCS: guess_dscs,
         Algorithm.DLIS: guess_dlis,
-        Algorithm.JW_1S: guess_jw_1s,
-        Algorithm.JW_2S: guess_jw_2s,
-        # Algorithm.JW_TS: guess_jw_ts,
+        Algorithm.JW1S: guess_jw_1s,
+        Algorithm.JW2S: guess_jw_2s,
+        # Algorithm.JWTS: guess_jw_ts,
         Algorithm.MOM: guess_mom,
         Algorithm.FOM: guess_fom,
         # Algorithm.BOHM_: guess_bohm_,
