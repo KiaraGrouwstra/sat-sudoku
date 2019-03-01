@@ -15,15 +15,15 @@ from sudoku import sudoku_board
 class Algorithm(Enum):
     RANDOM = 1
     DLCS = 2
-    DSCS = 3
+    # DSCS = 3
     DLIS = 4
-    JW1S = 5
-    JW2S = 6
-    # JWTS = 7
+    JW_1S = 5
+    JW_2S = 6
+    # JW_TS = 7
     MOM = 8
-    FOM = 9
+    # FOM = 9
     # BOHM_ = 10
-    BOHM = 11
+    # BOHM = 11
 
 def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
                  # =Algorithm.RANDOM
@@ -35,15 +35,15 @@ def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
     guess_fn = {
         Algorithm.RANDOM: guess_random,
         Algorithm.DLCS: guess_dlcs,
-        Algorithm.DSCS: guess_dscs,
+        # Algorithm.DSCS: guess_dscs,
         Algorithm.DLIS: guess_dlis,
-        Algorithm.JW1S: guess_jw_1s,
-        Algorithm.JW2S: guess_jw_2s,
-        # Algorithm.JWTS: guess_jw_ts,
+        Algorithm.JW_1S: guess_jw_1s,
+        Algorithm.JW_2S: guess_jw_2s,
+        # Algorithm.JW_TS: guess_jw_ts,
         Algorithm.MOM: guess_mom,
-        Algorithm.FOM: guess_fom,
+        # Algorithm.FOM: guess_fom,
         # Algorithm.BOHM_: guess_bohm_,
-        Algorithm.BOHM: guess_bohm,
+        # Algorithm.BOHM: guess_bohm,
     }[alg]
 
     res = []
