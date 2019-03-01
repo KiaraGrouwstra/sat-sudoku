@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import mannwhitneyu
 
 csv_file = os.path.join(os.getcwd(), 'data', 'metrics.csv')
 df = pd.read_csv(csv_file)
@@ -12,64 +11,16 @@ df['type'] = df['inputfile'].map(lambda s: s.split(os.path.sep)[-2])
 df = df[df['type'] != 'dimacs']
 df['smart_ratio'] = df.apply(lambda x: 1 - x['backtracks'] / x['splits'], axis=1)
 # df['split_to_backtrack'] = df.apply(lambda x: x['splits'] / x['backtracks'])
+
+# ditch badly performing heuristics
 df = df[df['alg'].map(lambda x: x not in [
     'DSCS',
     'FOM',
-    # 'BOHM',
-    ])]  # ditch joke heuristics + Bohm
+    'BOHM',
+])]
 
 a = df[df.fancy_beliefs == False]
 b = df[df.fancy_beliefs]
-
-metrics = {
-    'smart_ratio': 'less',
-    # 'split_to_backtrack': 'less',
-    'splits': 'greater',
-    'backtracks': 'greater',
-    'secs': 'greater',
-}
-
-def check_significance(df, metric):
-    a = df[df.fancy_beliefs == False]
-    b = df[df.fancy_beliefs]
-    stat, p = mannwhitneyu(a[metric], b[metric], alternative=kind)
-    return p
-
-for metric, kind in metrics.items():
-    print(metric)
-    print('mean')
-    print(a
-        # .groupby(['alg'])
-        [metric].mean())
-    print(b
-        # .groupby(['alg'])
-        [metric].mean())
-    print('min')
-    print(a
-        # .groupby(['alg'])
-        [metric].min())
-    print(b
-        # .groupby(['alg'])
-        [metric].min())
-    print('max')
-    print(a
-        # .groupby(['alg'])
-        [metric].max())
-    print(b
-        # .groupby(['alg'])
-        [metric].max())
-    print('p-value')
-    print(df
-        .groupby(['alg'])
-        .apply(check_significance, metric))
-
-# 'categorical':
-# 'alg',
-# 'fancy_beliefs',
-# 'type',
-
-# features:
-# # 'givens',
 
 plot_types = [
     # 'point',
@@ -106,7 +57,6 @@ for plot_type in plot_types:
         df_ = df[x.between(x.quantile(.025), x.quantile(.975))]
 
         plot = sns.catplot(
-        # plot = sns.violinplot(
             hue='fancy_beliefs',
             # x='fancy_beliefs',
             x='alg',
