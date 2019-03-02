@@ -22,7 +22,7 @@ metrics = {
     'secs': 'greater',
 }
 
-def check_significance(df, metric):
+def check_significance(df, metric, kind):
     a = df[df.fancy_beliefs == False]
     b = df[df.fancy_beliefs]
     stat, p = mannwhitneyu(a[metric], b[metric], alternative=kind)
@@ -54,4 +54,4 @@ for metric, kind in metrics.items():
     print('p-value')
     print(df
         .groupby(['alg'])
-        .apply(check_significance, metric))
+        .apply(check_significance, metric, kind))
