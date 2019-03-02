@@ -28,8 +28,6 @@ def guess_dlcs(rules, occurrences):
     If CP(v)>CN(v) then v=1 else v=0.
     '''
     # score: number of occurrences
-    # print(list(occurrences[Y].values())[0])
-    print(occurrences[Y])
     score = { belief: { fact: len(idxs) for fact, idxs in occs.items() } for belief, occs in occurrences.items() }
     # pick: 2-sided
     merged_score = merge(score[Y], score[N], lambda a, b: a + b)
