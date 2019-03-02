@@ -53,9 +53,9 @@ def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
         logging.debug(clauses)
         out_file = inputfile + '.out'
         (solved, state, secs, splits, backtracks, unit_applied, pure_applied) = solve_csp(clauses, out_file, guess_fn, fact_printer, fancy_beliefs)
-        logging.error(inputfile)
-        logging.error('%s, %f secs, %d splits, %d backtracks', solved, secs, splits, backtracks)
-        logging.warning(fact_printer(state.facts))
+        logging.warning(inputfile)
+        logging.warning('%s, %f secs, %d splits, %d backtracks', solved, secs, splits, backtracks)
+        logging.info(fact_printer(state.facts))
         res.append({
             'inputfile': inputfile,
             'solved': solved,
@@ -87,7 +87,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-S', '--strategy', dest='strategy', type=int, default=1,
                         help='1 for the basic DP and n = 2 or 3 for your two other strategies')
-    parser.add_argument('-l', '--loglevel', dest='loglevel', type=int, default=3,
+    parser.add_argument('-l', '--loglevel', dest='loglevel', type=int, default=2,
                         help='0 for debug, 1 for info (default), 2 for warn, 3 for error')
     parser.add_argument('-p', '--printer', type=str2bool, nargs='?', default=False,
                         help='print solution as sudoku instead of dict')

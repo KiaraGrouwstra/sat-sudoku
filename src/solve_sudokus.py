@@ -14,7 +14,7 @@ def main():
         False,
     ]:
         for alg in Algorithm:
-            logging.error(alg.name)
+            logging.warning(alg.name)
             res = monitor_runs(fpaths, alg=alg, loglvl=logging.ERROR, fancy_beliefs=belief)
             df = pd.DataFrame(res)
             if os.path.isfile(output_file):

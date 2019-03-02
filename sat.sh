@@ -7,7 +7,7 @@ fi
 
 s=2
 p=''
-l=3
+l=2
 
 while getopts ":S:l:p" opt; do
   case $opt in
