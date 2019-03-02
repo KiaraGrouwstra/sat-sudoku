@@ -14,8 +14,10 @@ python src/sat.py -p -l2 -S2 ./data/sudoku-example-full.txt
 
 # run: docker
 
+# navigate to src directory
+cd src
 # build docker image, use backslashes on Windows
-docker build -t sat -f ./docker/sat/Dockerfile ./src
+docker build -t sat .
 # test script thru docker
 docker run sat --help
 # run on local file on our Desktop, mounting to /data, and passing it the file
