@@ -1,4 +1,4 @@
 script:
 - docker build -t sudoku-base -f ./docker/base/Dockerfile .
 - docker build -t sat -f ./docker/top/Dockerfile .
-- docker run sat -S1 -p
+- docker run sat -S1 -p1

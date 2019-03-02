@@ -3,14 +3,17 @@ a SAT solver using sudokus
 
 ### usage
 ```bash
+# run with one command using docker (no Windows)
+./sat.sh -S2 ~/Desktop/sudoku-example-full.txt
+
 # run: local
 
 # as a command (*nix environment)
-./SAT -S1 -p -l2 ./data/sudoku-example-full.txt
+./SAT -S1 -p ./data/sudoku-example-full.txt
 # as a Python script (cross-platform)
 python src/sat.py --help
-# test image on sample file, using -p to print solution as a sudoku board, strategy 2, log level info
-python src/sat.py -p -l2 -S2 ./data/sudoku-example-full.txt
+# test image on sample file, using -p=1 to print solution as a sudoku board, strategy 2, log level info
+python src/sat.py -p1 -S2 ./data/sudoku-example-full.txt
 
 # run: docker
 
@@ -21,7 +24,7 @@ docker build -t sat .
 # test script thru docker
 docker run sat --help
 # run on local file on our Desktop, mounting to /data, and passing it the file
-docker run -v ~/Desktop:/data sat -S1 -p /data/sudoku-example-full.txt
+docker run -v ~/Desktop:/data sat -S1 -p1 /data/sudoku-example-full.txt
 
 # dev: local
 

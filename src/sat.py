@@ -73,14 +73,23 @@ def monitor_runs(inputfiles, alg, fact_printer=dict, loglvl=logging.INFO,
         })
     return res
 
+# https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0', ''):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 def main():
     '''take cli flags and solve SAT problem'''
     parser = argparse.ArgumentParser()
     parser.add_argument('-S', '--strategy', dest='strategy', type=int, default=1,
                         help='1 for the basic DP and n = 2 or 3 for your two other strategies')
-    parser.add_argument('-l', '--loglevel', dest='loglevel', type=int, default=1,
+    parser.add_argument('-l', '--loglevel', dest='loglevel', type=int, default=3,
                         help='0 for debug, 1 for info (default), 2 for warn, 3 for error')
-    parser.add_argument('-p', '--printer', default=False, action='store_true',
+    parser.add_argument('-p', '--printer', type=str2bool, nargs='?', default=False,
                         help='print solution as sudoku instead of dict')
     parser.add_argument('inputfiles', nargs='*', default=[os.path.join(os.getcwd(), 'data', 'dimacs', 'sudoku-example-full.txt')],
                         help='the input file is the concatenation of all required input clauses.')
