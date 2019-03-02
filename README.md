@@ -8,8 +8,6 @@ a SAT solver using sudokus
 
 # run: local
 
-# as a command (*nix environment)
-./SAT -S1 -p ./data/sudoku-example-full.txt
 # as a Python script (cross-platform)
 python src/sat.py --help
 # test image on sample file, using -p=1 to print solution as a sudoku board, strategy 2, log level info
